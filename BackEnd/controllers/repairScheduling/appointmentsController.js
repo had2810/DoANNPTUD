@@ -1,5 +1,5 @@
-import appointmentsService from "../../services/repairScheduling/appointmentsService.js";
-import baseController from "../baseController.js";
+const appointmentsService = require("../../services/repairScheduling/appointmentsService");
+const baseController = require("../baseController");
 
 const base = baseController(appointmentsService);
 const appointmentsController = {
@@ -80,4 +80,4 @@ const appointmentsController = {
   },
 };
 
-export default appointmentsController;
+module.exports = appointmentsController;

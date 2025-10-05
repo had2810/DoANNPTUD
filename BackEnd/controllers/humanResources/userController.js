@@ -1,7 +1,10 @@
-import User from "../../models/humanResources/user.model.js";
-import userService from "../../services/humanResources/userService.js";
-import { generateAccessToken, generateRefreshToken } from "../../utils/jwt.js";
-import _ from "lodash";
+const User = require("../../schemas/humanResources/user.model");
+const userService = require("../../services/humanResources/userService");
+const {
+  generateAccessToken,
+  generateRefreshToken,
+} = require("../../utils/jwt");
+const _ = require("lodash");
 
 const userController = {
   // Register User
@@ -118,4 +121,4 @@ const userController = {
   },
 };
 
-export default userController;
+module.exports = userController;

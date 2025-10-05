@@ -1,5 +1,5 @@
-import bcrypt from "bcrypt";
-import { comparePassword } from "../utils/passwordHash.js";
+const bcrypt = require("bcryptjs");
+const { comparePassword } = require("../utils/passwordHash");
 
 const queryWithPopulate = (query, populateFields = []) => {
   populateFields.forEach((field) => {
@@ -68,4 +68,4 @@ const baseService = (Model, options = {}) => ({
   },
 });
 
-export default baseService;
+module.exports = baseService;

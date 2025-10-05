@@ -1,5 +1,5 @@
-import baseController from "../baseController.js";
-import repairStatusService from "../../services/repairScheduling/repairStatusService.js";
+const baseController = require("../baseController");
+const repairStatusService = require("../../services/repairScheduling/repairStatusService");
 
 const base = baseController(repairStatusService);
 const repairStatusController = {
@@ -23,4 +23,4 @@ const repairStatusController = {
   deleteRepairStatusById: base.delete,
 };
 
-export default repairStatusController;
+module.exports = repairStatusController;

@@ -1,5 +1,5 @@
-import baseService from "../baseService.js";
-import Service from "../../models/deviceService/service.model.js";
+const baseService = require("../baseService");
+const Service = require("../../schemas/deviceService/service.model");
 
 const base = baseService(Service, { populateFields: ["deviceTemplateId"] });
 
@@ -7,4 +7,4 @@ const serviceService = {
   ...base,
 };
 
-export default serviceService;
+module.exports = serviceService;

@@ -1,6 +1,6 @@
-import baseService from "../baseService.js";
-import RepairStatus from "../../models/repairScheduling/repairStatus.model.js";
-import { sendMail } from "../emailService.js";
+const baseService = require("../baseService");
+const RepairStatus = require("../../schemas/repairScheduling/repairStatus.model");
+const { sendMail } = require("../emailService");
 
 const base = baseService(RepairStatus, {
   populateFields: [
@@ -83,4 +83,4 @@ const repairStatusService = {
   },
 };
 
-export default repairStatusService;
+module.exports = repairStatusService;

@@ -1,6 +1,6 @@
-import baseService from "../baseService.js";
-import DeviceTemplate from "../../models/deviceService/deviceTemplate.model.js";
-import Service from "../../models/deviceService/service.model.js";
+const baseService = require("../baseService");
+const DeviceTemplate = require("../../schemas/deviceService/deviceTemplate.model");
+const Service = require("../../schemas/deviceService/service.model");
 
 const deviceTemplateService = {
   ...baseService(DeviceTemplate),
@@ -21,4 +21,4 @@ const deviceTemplateService = {
   },
 };
 
-export default deviceTemplateService;
+module.exports = deviceTemplateService;

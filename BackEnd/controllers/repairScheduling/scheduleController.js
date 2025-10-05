@@ -1,4 +1,4 @@
-import scheduleService from "../../services/repairScheduling/scheduleService.js";
+const scheduleService = require("../../services/repairScheduling/scheduleService");
 
 const scheduleController = {
   getAvailableTimeByDate: async (req, res) => {
@@ -93,4 +93,4 @@ const scheduleController = {
   },
 };
 
-export default scheduleController;
+module.exports = scheduleController;

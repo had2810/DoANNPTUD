@@ -1,7 +1,10 @@
-import express from "express";
-import adminService from "../../services/humanResources/adminService.js";
-import { generateAccessToken, generateRefreshToken } from "../../utils/jwt.js";
-import _ from "lodash";
+const express = require("express");
+const adminService = require("../../services/humanResources/adminService");
+const {
+  generateAccessToken,
+  generateRefreshToken,
+} = require("../../utils/jwt");
+const _ = require("lodash");
 
 const adminController = {
   //Add Admin
@@ -121,4 +124,4 @@ const adminController = {
   },
 };
 
-export default adminController;
+module.exports = adminController;

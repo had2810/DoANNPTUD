@@ -45,4 +45,4 @@ const baseController = (service) => ({
   },
 });
 
-export default baseController;
+module.exports = baseController;

@@ -1,5 +1,5 @@
-import baseService from "../baseService.js";
-import EmployeeWorkSchedule from "../../models/repairScheduling/employeeWork.model.js";
+const baseService = require("../baseService");
+const EmployeeWorkSchedule = require("../../schemas/repairScheduling/employeeWork.model");
 
 const base = baseService(EmployeeWorkSchedule, {
   populateFields: ["appointmentId", "employeeId"],
@@ -24,4 +24,4 @@ const employeeWorkService = {
   },
 };
 
-export default employeeWorkService;
+module.exports = employeeWorkService;

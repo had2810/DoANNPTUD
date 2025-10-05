@@ -1,8 +1,8 @@
-import User from "../../models/humanResources/user.model.js";
-import baseService from "../baseService.js";
-import { hashPassword } from "../../utils/passwordHash.js";
-import changePasswordService from "../changePasswordService.js";
-import { sendMail } from "../emailService.js";
+const User = require("../../schemas/humanResources/user.model");
+const baseService = require("../baseService");
+const { hashPassword } = require("../../utils/passwordHash");
+const changePasswordService = require("../changePasswordService");
+const { sendMail } = require("../emailService");
 
 // Gọi baseService 1 lần với populateFields (nếu User có field 'role')
 const base = baseService(User, { populateFields: ["role"] });
@@ -48,4 +48,4 @@ const userService = {
   },
 };
 
-export default userService;
+module.exports = userService;

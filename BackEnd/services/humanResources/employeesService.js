@@ -1,9 +1,9 @@
-import Employees from "../../models/humanResources/employees.model.js";
-import baseService from "../baseService.js";
-import EmployeeWorkSchedule from "../../models/repairScheduling/employeeWork.model.js";
-import Appointment from "../../models/repairScheduling/appointments.model.js";
-import { hashPassword } from "../../utils/passwordHash.js";
-import mongoose from "mongoose";
+const Employees = require("../../schemas/humanResources/employees.model");
+const baseService = require("../baseService");
+const EmployeeWorkSchedule = require("../../schemas/repairScheduling/employeeWork.model");
+const Appointment = require("../../schemas/repairScheduling/appointments.model");
+const { hashPassword } = require("../../utils/passwordHash");
+const mongoose = require("mongoose");
 
 // Gọi baseService 1 lần với populateFields (nếu Employees có field 'role')
 const base = baseService(Employees, { populateFields: ["role"] });
@@ -81,4 +81,4 @@ const employeesService = {
   },
 };
 
-export default employeesService;
+module.exports = employeesService;

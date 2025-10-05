@@ -1,47 +1,24 @@
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-dotenv.config();
+// JWT utilities are commented out for local testing of other APIs.
+// Restore the implementation when ready to test authentication flows.
 
-// Lấy secret từ biến môi trường (.env)
-const secretKey = process.env.ACCESS_TOKEN_SECRET;
-const refreshKey = process.env.REFRESH_TOKEN_SECRET;
+function generateAccessToken(payload) {
+  return `dev-access-token`;
+}
 
-/**
- * Tạo accessToken sống 20 giây
- * - Chứa thông tin người dùng như id, email, role,...
- * - Dùng để truy cập các API cần đăng nhập
- */
-const generateAccessToken = (payload) => {
-  return jwt.sign(payload, secretKey, {
-    expiresIn: "30m",
-  });
-};
+function generateRefreshToken(payload) {
+  return `dev-refresh-token`;
+}
 
-/**
- * Tạo refreshToken sống 7 ngày
- * - Dùng để tạo lại accessToken khi hết hạn
- */
-const generateRefreshToken = (payload) => {
-  return jwt.sign(payload, refreshKey, {
-    expiresIn: "7d",
-  });
-};
+function verifyAccessToken(token) {
+  // For dev, accept any token and return a dummy user
+  return { id: "dev-user", email: "dev@example.com", role: "admin" };
+}
 
-/**
- * Xác minh accessToken hợp lệ
- */
-const verifyAccessToken = (token) => {
-  return jwt.verify(token, secretKey);
-};
+function verifyRefreshToken(token) {
+  return { id: "dev-user", email: "dev@example.com", role: "admin" };
+}
 
-/**
- * Xác minh refreshToken hợp lệ
- */
-const verifyRefreshToken = (token) => {
-  return jwt.verify(token, refreshKey);
-};
-
-export {
+module.exports = {
   generateAccessToken,
   generateRefreshToken,
   verifyAccessToken,

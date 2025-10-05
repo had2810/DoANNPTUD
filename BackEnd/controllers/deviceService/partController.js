@@ -1,5 +1,5 @@
-import partService from "../../services/deviceService/partService.js";
-import baseController from "../baseController.js";
+const partService = require("../../services/deviceService/partService");
+const baseController = require("../baseController");
 
 const base = baseController(partService);
 
@@ -11,4 +11,4 @@ const partController = {
   deletePart: base.delete,
 };
 
-export default partController;
+module.exports = partController;

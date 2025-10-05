@@ -1,5 +1,5 @@
-import baseController from "../baseController.js";
-import deviceUserService from "../../services/deviceService/deviceUserService.js";
+const baseController = require("../baseController");
+const deviceUserService = require("../../services/deviceService/deviceUserService");
 
 const base = baseController(deviceUserService);
 
@@ -11,4 +11,4 @@ const deviceUserController = {
   deleteDeviceUser: base.delete,
 };
 
-export default deviceUserController;
+module.exports = deviceUserController;

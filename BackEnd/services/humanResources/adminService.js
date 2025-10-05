@@ -1,7 +1,7 @@
-import Admin from "../../models/humanResources/admin.model.js";
-import baseService from "../baseService.js";
-import { hashPassword, comparePassword } from "../../utils/passwordHash.js";
-import changePasswordService from "../changePasswordService.js";
+const Admin = require("../../schemas/humanResources/admin.model");
+const baseService = require("../baseService");
+const { hashPassword, comparePassword } = require("../../utils/passwordHash");
+const changePasswordService = require("../changePasswordService");
 
 // Gọi baseService 1 lần với populateFields (nếu Admin có field 'role')
 const base = baseService(Admin, { populateFields: ["role"] });
@@ -36,4 +36,4 @@ const adminService = {
   },
 };
 
-export default adminService;
+module.exports = adminService;

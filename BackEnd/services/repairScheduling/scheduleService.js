@@ -1,10 +1,10 @@
-import EmployeeWorkSchedule from "../../models/repairScheduling/employeeWork.model.js";
-import availableTimeService from "./availableTimeService.js";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc.js";
-import Appointment from "../../models/repairScheduling/appointments.model.js";
-
+const dayjs = require("dayjs");
+const utc = require("dayjs/plugin/utc");
 dayjs.extend(utc);
+
+const EmployeeWorkSchedule = require("../../schemas/repairScheduling/employeeWork.model");
+const availableTimeService = require("./availableTimeService");
+const Appointment = require("../../schemas/repairScheduling/appointments.model");
 
 const scheduleService = {
   getAvailableTimeByDate: async (dateStr) => {
@@ -241,4 +241,4 @@ const scheduleService = {
   },
 };
 
-export default scheduleService;
+module.exports = scheduleService;

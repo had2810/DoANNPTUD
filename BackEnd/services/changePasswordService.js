@@ -1,4 +1,4 @@
-import { comparePassword, hashPassword } from "../utils/passwordHash.js";
+const { comparePassword, hashPassword } = require("../utils/passwordHash");
 
 const validatePasswordStrength = (password) => {
   const lengthRule = /^.{8,}$/;
@@ -50,4 +50,4 @@ const changePasswordService = (Model) => ({
   },
 });
 
-export default changePasswordService;
+module.exports = changePasswordService;

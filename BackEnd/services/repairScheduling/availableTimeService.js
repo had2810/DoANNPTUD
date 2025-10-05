@@ -1,8 +1,8 @@
-import dayjs from "dayjs";
-import Appointment from "../../models/repairScheduling/appointments.model.js";
-import EmployeeWorkSchedule from "../../models/repairScheduling/employeeWork.model.js";
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter.js";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore.js";
+const dayjs = require("dayjs");
+const Appointment = require("../../schemas/repairScheduling/appointments.model");
+const EmployeeWorkSchedule = require("../../schemas/repairScheduling/employeeWork.model");
+const isSameOrAfter = require("dayjs/plugin/isSameOrAfter");
+const isSameOrBefore = require("dayjs/plugin/isSameOrBefore");
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -388,4 +388,4 @@ const availableTimeService = {
   },
 };
 
-export default availableTimeService;
+module.exports = availableTimeService;

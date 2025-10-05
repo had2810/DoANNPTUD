@@ -1,5 +1,5 @@
-import baseController from "../baseController.js";
-import employeeWorkService from "../../services/repairScheduling/employeeWorkService.js";
+const baseController = require("../baseController");
+const employeeWorkService = require("../../services/repairScheduling/employeeWorkService");
 
 const base = baseController(employeeWorkService);
 const employeeWorkController = {
@@ -29,4 +29,4 @@ const employeeWorkController = {
   deleteEmployeeWork: base.delete,
 };
 
-export default employeeWorkController;
+module.exports = employeeWorkController;

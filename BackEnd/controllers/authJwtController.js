@@ -1,7 +1,7 @@
-import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
-import Admin from "../models/humanResources/admin.model.js";
-import Employee from "../models/humanResources/employees.model.js";
-import User from "../models/humanResources/user.model.js";
+const { generateAccessToken, generateRefreshToken } = require("../utils/jwt");
+const Admin = require("../schemas/humanResources/admin.model");
+const Employee = require("../schemas/humanResources/employees.model");
+const User = require("../schemas/humanResources/user.model");
 
 // =========================================
 // [B1] Manual Login Controller (Test Only)
@@ -97,7 +97,7 @@ const getMeController = async (req, res) => {
 };
 
 // Export các controller ra ngoài cho router sử dụng
-export {
+module.exports = {
   manualLoginController,
   refreshTokenController,
   verifyTokenController,

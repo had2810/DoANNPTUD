@@ -1,5 +1,5 @@
-import partsInventoryService from "../../services/deviceService/partsInventoryService.js";
-import baseController from "../baseController.js";
+const partsInventoryService = require("../../services/deviceService/partsInventoryService");
+const baseController = require("../baseController");
 
 const base = baseController(partsInventoryService);
 
@@ -11,4 +11,4 @@ const partsInventoryController = {
   deletePartsInventory: base.delete,
 };
 
-export default partsInventoryController;
+module.exports = partsInventoryController;

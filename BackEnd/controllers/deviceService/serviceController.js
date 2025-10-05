@@ -1,6 +1,6 @@
-import express from "express";
-import baseController from "../baseController.js";
-import serviceService from "../../services/deviceService/serviceService.js";
+const express = require("express");
+const baseController = require("../baseController");
+const serviceService = require("../../services/deviceService/serviceService");
 
 const base = baseController(serviceService);
 const serviceController = {
@@ -11,4 +11,4 @@ const serviceController = {
   deleteService: base.delete,
 };
 
-export default serviceController;
+module.exports = serviceController;

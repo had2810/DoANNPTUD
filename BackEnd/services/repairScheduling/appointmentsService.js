@@ -1,12 +1,12 @@
-import baseService from "../baseService.js";
-import Appointment from "../../models/repairScheduling/appointments.model.js";
-import repairStatusService from "./repairStatusService.js";
-import Service from "../../models/deviceService/service.model.js";
-import EmployeeWork from "../../models/repairScheduling/employeeWork.model.js";
-import availableTimeService from "./availableTimeService.js";
-import dayjs from "dayjs";
-import Employees from "../../models/humanResources/employees.model.js";
-import { sendMail } from "../emailService.js";
+const baseService = require("../baseService");
+const Appointment = require("../../schemas/repairScheduling/appointments.model");
+const repairStatusService = require("./repairStatusService");
+const Service = require("../../schemas/deviceService/service.model");
+const EmployeeWork = require("../../schemas/repairScheduling/employeeWork.model");
+const availableTimeService = require("./availableTimeService");
+const dayjs = require("dayjs");
+const Employees = require("../../schemas/humanResources/employees.model");
+const { sendMail } = require("../emailService");
 
 const base = baseService(Appointment, {
   populateFields: ["userId", "deviceTemplateId", "serviceId", "employeeId"],
@@ -283,4 +283,4 @@ const appointmentsService = {
   },
 };
 
-export default appointmentsService;
+module.exports = appointmentsService;

@@ -1,7 +1,10 @@
-import express from "express";
-import employeesService from "../../services/humanResources/employeesService.js";
-import { generateAccessToken, generateRefreshToken } from "../../utils/jwt.js";
-import _ from "lodash";
+const express = require("express");
+const employeesService = require("../../services/humanResources/employeesService");
+const {
+  generateAccessToken,
+  generateRefreshToken,
+} = require("../../utils/jwt");
+const _ = require("lodash");
 
 const EmployeeController = {
   // Add New Employee
@@ -122,4 +125,4 @@ const EmployeeController = {
   },
 };
 
-export default EmployeeController;
+module.exports = EmployeeController;

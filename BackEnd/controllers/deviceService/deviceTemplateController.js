@@ -1,6 +1,6 @@
-import express from "express";
-import baseController from "../baseController.js";
-import deviceTemplateService from "../../services/deviceService/deviceTemplateService.js";
+const express = require("express");
+const baseController = require("../baseController");
+const deviceTemplateService = require("../../services/deviceService/deviceTemplateService");
 
 const base = baseController(deviceTemplateService);
 const deviceTemplateController = {
@@ -16,4 +16,4 @@ const deviceTemplateController = {
   deleteDeviceTemplateById: base.delete,
 };
 
-export default deviceTemplateController;
+module.exports = deviceTemplateController;

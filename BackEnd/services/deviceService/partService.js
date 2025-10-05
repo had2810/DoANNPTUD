@@ -1,8 +1,8 @@
-import baseService from "../baseService.js";
-import Part from "../../models/deviceService/part.model.js";
+const baseService = require("../baseService");
+const Part = require("../../schemas/deviceService/part.model");
 
 const partService = {
   ...baseService(Part),
 };
 
-export default partService;
+module.exports = partService;

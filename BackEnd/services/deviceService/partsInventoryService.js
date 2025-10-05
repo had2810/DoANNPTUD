@@ -1,9 +1,9 @@
-import baseService from "../baseService.js";
-import PartsInventory from "../../models/deviceService/partsInventory.model.js";
+const baseService = require("../baseService");
+const PartsInventory = require("../../schemas/deviceService/partsInventory.model");
 
 const base = baseService(PartsInventory, { populateFields: ["partId"] });
 const partsInventoryService = {
   ...base,
 };
 
-export default partsInventoryService;
+module.exports = partsInventoryService;

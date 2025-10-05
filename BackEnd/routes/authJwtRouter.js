@@ -1,15 +1,15 @@
-import express from "express";
-import {
+const express = require("express");
+const {
   manualLoginController,
   refreshTokenController,
   verifyTokenController,
   getMeController,
-} from "../controllers/authJwtController.js";
+} = require("../controllers/authJwtController");
 
-import {
+const {
   checkAccessToken,
   checkRefreshToken,
-} from "../middleware/authJwtMiddleware.js";
+} = require("../middleware/authJwtMiddleware");
 
 const router = express.Router();
 
@@ -46,4 +46,4 @@ router.post("/verify-refreshToken", checkRefreshToken, verifyTokenController);
  */
 router.get("/me", checkAccessToken, getMeController);
 
-export default router;
+module.exports = router;

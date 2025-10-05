@@ -1,6 +1,6 @@
 // src/services/emailService.js
-import nodemailer from "nodemailer";
-import dotenv from "dotenv";
+const nodemailer = require("nodemailer");
+const dotenv = require("dotenv");
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
@@ -485,7 +485,7 @@ const templates = {
   }),
 };
 
-export async function sendMail(to, templateName, ...args) {
+async function sendMail(to, templateName, ...args) {
   const { subject, html } = templates[templateName](...args);
   const mailOptions = {
     from: process.env.SMTP_USER,
@@ -495,3 +495,8 @@ export async function sendMail(to, templateName, ...args) {
   };
   return transporter.sendMail(mailOptions);
 }
+
+module.exports = {
+  sendMail,
+  templates,
+};

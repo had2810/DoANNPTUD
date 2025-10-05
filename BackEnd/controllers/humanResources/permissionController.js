@@ -1,5 +1,5 @@
-import express from "express";
-import Permission from "../../models/humanResources/permissions.model.js";
+const express = require("express");
+const Permission = require("../../schemas/humanResources/permissions.model");
 
 const permissionController = {
   // Add Permission
@@ -61,4 +61,4 @@ const permissionController = {
   },
 };
 
-export default permissionController;
+module.exports = permissionController;
