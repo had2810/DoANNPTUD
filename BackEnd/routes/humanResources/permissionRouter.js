@@ -1,0 +1,18 @@
+const express = require("express");
+const permissionController = require("../../controllers/humanResources/permissionController.js");
+
+const permissionRouter = express.Router();
+
+// Add Permission
+permissionRouter.post("/add", permissionController.addPermission);
+
+// Get Permissions
+permissionRouter.get("/", permissionController.getPermissions);
+
+// Update Permission
+permissionRouter.put("/update/:id", permissionController.updatePermission);
+
+// Delete permission
+permissionRouter.delete("/delete/:id", permissionController.deletePermission);
+
+module.exports = permissionRouter;
