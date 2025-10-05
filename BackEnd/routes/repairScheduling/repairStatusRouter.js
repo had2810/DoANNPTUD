@@ -25,9 +25,9 @@ router.put(
   repairStatusController.updateRepairStatusById
 );
 
-// Delete a repair status by ID
-router.delete(
-  "/:id",
+// Soft-delete a repair status by ID
+router.put(
+  "/delete/:id",
   checkAccessToken,
   checkRole("admin"),
   repairStatusController.deleteRepairStatusById

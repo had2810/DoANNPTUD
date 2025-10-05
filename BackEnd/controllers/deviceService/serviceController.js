@@ -8,6 +8,7 @@ const serviceController = {
   getAllServices: base.getAll,
   getServiceById: base.getById,
   updateService: base.update,
+  // Soft-delete via PUT (use base.delete which will be soft by default)
   deleteService: base.delete,
 };
 

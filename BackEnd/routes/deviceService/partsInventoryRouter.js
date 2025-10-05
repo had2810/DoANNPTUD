@@ -16,6 +16,7 @@ router.get("/:id", partsInventoryController.getPartsInventoryById);
 router.put("/:id", partsInventoryController.updatePartsInventory);
 
 // Delete a parts inventory by ID
-router.delete("/:id", partsInventoryController.deletePartsInventory);
+// Soft-delete a parts inventory by ID
+router.put('/delete/:id', partsInventoryController.deletePartsInventory);
 
 module.exports = router;

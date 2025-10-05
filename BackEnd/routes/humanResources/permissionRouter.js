@@ -12,7 +12,7 @@ permissionRouter.get("/", permissionController.getPermissions);
 // Update Permission
 permissionRouter.put("/update/:id", permissionController.updatePermission);
 
-// Delete permission
-permissionRouter.delete("/delete/:id", permissionController.deletePermission);
+// Soft-delete permission via PUT
+permissionRouter.put("/delete/:id", permissionController.deletePermission);
 
 module.exports = permissionRouter;

@@ -21,7 +21,9 @@ const permissionController = {
   // Get Permissions
   getPermissions: async (req, res) => {
     try {
-      const permissions = await Permission.find();
+      const includeDeleted = req.query.includeDeleted === "true";
+      const filter = includeDeleted ? {} : { isDeleted: { $ne: true } };
+      const permissions = await Permission.find(filter);
       res.status(200).json(permissions);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -47,14 +49,18 @@ const permissionController = {
     }
   },
 
-  // Delete Permission
+  // Soft-delete Permission (used by PUT /delete/:id)
   deletePermission: async (req, res) => {
     try {
-      const permission = await Permission.findOneAndDelete(req.params.id);
+      const permission = await Permission.findByIdAndUpdate(
+        req.params.id,
+        { isDeleted: true },
+        { new: true }
+      );
       if (!permission) {
-        res.status(404).json({ message: "Permission not found" });
+        return res.status(404).json({ message: "Permission not found" });
       }
-      res.status(200).json({ message: "Permission deleted" });
+      res.status(200).json(permission);
     } catch (error) {
       res.status(500).json({ message: error.message });
     }

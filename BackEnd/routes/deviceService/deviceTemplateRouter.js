@@ -15,7 +15,7 @@ router.get("/:id", deviceTemplateController.getDeviceTemplateById);
 // Update a device template by ID
 router.put("/:id", deviceTemplateController.updateDeviceTemplateById);
 
-// Delete a device template by ID
-router.delete("/:id", deviceTemplateController.deleteDeviceTemplateById);
+// Soft-delete a device template by ID
+router.put("/delete/:id", deviceTemplateController.deleteDeviceTemplateById);
 
 module.exports = router;

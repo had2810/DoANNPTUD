@@ -26,12 +26,15 @@ router.get("/", checkAccessToken, EmployeeController.getAllEmployees);
 router.put("/:id", checkAccessToken, EmployeeController.updateEmployee);
 
 // Delete Employee
-router.delete(
-  "/:id",
+// Soft-delete Employee via PUT (admin only)
+router.put(
+  "/delete/:id",
   checkAccessToken,
   checkRole("admin"),
   EmployeeController.deleteEmployee
 );
+
+// (Hard delete route removed) Use PUT /:id/soft-delete for soft-deletes.
 
 // Change Password
 router.put(

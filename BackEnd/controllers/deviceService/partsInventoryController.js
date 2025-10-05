@@ -8,6 +8,7 @@ const partsInventoryController = {
   getPartsInventories: base.getAll,
   getPartsInventoryById: base.getById,
   updatePartsInventory: base.update,
+  // soft delete via PUT (use base.delete which will soft-delete by default)
   deletePartsInventory: base.delete,
 };
 

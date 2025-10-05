@@ -10,7 +10,8 @@ const baseController = (service) => ({
 
   getAll: async (req, res) => {
     try {
-      const items = await service.getAll();
+      const includeDeleted = req.query.includeDeleted === "true";
+      const items = await service.getAll({}, { includeDeleted });
       res.status(200).json(items);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -19,7 +20,11 @@ const baseController = (service) => ({
 
   getById: async (req, res) => {
     try {
-      const item = await service.getById(req.params.id);
+      const includeDeleted = req.query.includeDeleted === "true";
+      const item = await service.getById(req.params.id, { includeDeleted });
+      if (!item) {
+        return res.status(404).json({ message: "Not found" });
+      }
       res.status(200).json(item);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -37,12 +42,19 @@ const baseController = (service) => ({
 
   delete: async (req, res) => {
     try {
-      await service.delete(req.params.id);
-      res.status(200).json({ message: "Deleted successfully" });
+      // Always perform soft-delete via base service (set isDeleted = true)
+      const deleted = await service.delete(req.params.id, { hard: false });
+      if (!deleted) {
+        return res.status(404).json({ message: "Not found" });
+      }
+      res.status(200).json(deleted);
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
   },
+
+
+
 });
 
 module.exports = baseController;

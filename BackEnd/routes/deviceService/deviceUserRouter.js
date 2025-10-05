@@ -10,7 +10,7 @@ router.get("/", deviceUserController.getDeviceUsers);
 router.get("/:id", deviceUserController.getDeviceUserById);
 // Update a device user
 router.put("/:id", deviceUserController.updateDeviceUser);
-// Delete a device user
-router.delete("/:id", deviceUserController.deleteDeviceUser);
+// Soft-delete a device user
+router.put("/delete/:id", deviceUserController.deleteDeviceUser);
 
 module.exports = router;

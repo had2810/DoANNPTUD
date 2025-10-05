@@ -8,6 +8,7 @@ const deviceUserController = {
   getDeviceUsers: base.getAll,
   getDeviceUserById: base.getById,
   updateDeviceUser: base.update,
+  // soft delete via PUT (use base.delete which will soft-delete by default)
   deleteDeviceUser: base.delete,
 };
 

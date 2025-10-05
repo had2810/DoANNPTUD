@@ -16,6 +16,7 @@ router.get("/:id", partController.getPartById);
 router.put("/:id", partController.updatePart);
 
 // Delete a part by ID
-router.delete("/:id", partController.deletePart);
+// Soft-delete a part by ID
+router.put("/delete/:id", partController.deletePart);
 
 module.exports = router;

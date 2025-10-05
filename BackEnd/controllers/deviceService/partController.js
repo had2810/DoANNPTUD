@@ -8,6 +8,7 @@ const partController = {
   getParts: base.getAll,
   getPartById: base.getById,
   updatePart: base.update,
+  // soft delete via PUT (use base.delete which will soft-delete by default)
   deletePart: base.delete,
 };
 

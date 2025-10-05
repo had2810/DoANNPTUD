@@ -93,11 +93,14 @@ const EmployeeController = {
   // Delete Employee
   deleteEmployee: async (req, res) => {
     try {
-      const employee = await employeesService.deleteEmployee(req.params.id);
+      const isHard = req.method === "DELETE" || req.query.hard === "true";
+      const result = await employeesService.deleteEmployee(req.params.id, {
+        hard: isHard,
+      });
       res.status(200).json({
-        message: "Employee deleted",
+        message: isHard ? "Employee hard-deleted" : "Employee soft-deleted",
         id: req.params.id,
-        result: employee,
+        result,
       });
     } catch (error) {
       res.status(500).json({ message: error.message });

@@ -46,7 +46,8 @@ const employeesService = {
     );
   },
 
-  deleteEmployee: async (id) => {
+  deleteEmployee: async (id, opts = {}) => {
+    const { hard = false } = opts || {};
     const objectId = new mongoose.Types.ObjectId(id);
     console.log("🔄 XÓA NHÂN VIÊN:", id);
     console.log("👉 ObjectId ép kiểu:", objectId);
@@ -61,15 +62,23 @@ const employeesService = {
     console.log(`📋 Schedule tìm được: ${relatedSchedules.length}`);
     console.log(`📋 Appointment tìm được: ${relatedAppointments.length}`);
 
-    const scheduleDeleteResult = await EmployeeWorkSchedule.deleteMany({
-      employeeId: objectId,
-    });
+    // Soft-delete employee work schedules related to this employee
+    const scheduleDeleteResult = await EmployeeWorkSchedule.updateMany(
+      { employeeId: objectId },
+      { isDeleted: true }
+    );
     const appointmentUpdateResult = await Appointment.updateMany(
       { employeeId: objectId },
       { $unset: { employeeId: "" } }
     );
 
-    const employeeDeleteResult = await base.delete(id); // Không truyền session
+    let employeeDeleteResult;
+    if (hard) {
+      // Perform hard delete
+      employeeDeleteResult = await base.hardDelete(id);
+    } else {
+      employeeDeleteResult = await base.delete(id); // soft-delete
+    }
 
     console.log(`✅ Đã xóa ${scheduleDeleteResult.deletedCount} schedule`);
     console.log(

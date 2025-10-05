@@ -28,9 +28,9 @@ router.get("/:id", checkAccessToken, adminController.getAdmin);
 // Update An Admin
 router.put("/:id", checkAccessToken, adminController.updateAdmin);
 
-// Delete An Admin
-router.delete(
-  "/:id",
+// Soft-delete an Admin
+router.put(
+  "/delete/:id",
   checkAccessToken,
   checkRole("admin"),
   adminController.deleteAdmin

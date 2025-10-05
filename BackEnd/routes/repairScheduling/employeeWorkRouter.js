@@ -25,9 +25,9 @@ router.get("/:id", employeeWorkController.getEmployeeWorkById);
 // Update an employee work schedule by ID
 router.put("/:id", checkAccessToken, employeeWorkController.updateEmployeeWork);
 
-// Delete an employee work schedule by ID
-router.delete(
-  "/:id",
+// Soft-delete an employee work schedule by ID
+router.put(
+  "/delete/:id",
   checkAccessToken,
   checkRole("admin"),
   employeeWorkController.deleteEmployeeWork

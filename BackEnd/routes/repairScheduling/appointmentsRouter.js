@@ -20,9 +20,11 @@ router.get("/:id", checkAccessToken, appointmentsController.getAppointmentById);
 // Update an appointment
 router.put("/:id", checkAccessToken, appointmentsController.updateAppointment);
 
-// Delete an appointment
-router.delete(
-  "/:id",
+// (Hard delete route removed) Use PUT /:id/soft-delete for soft-deletes.
+
+// Soft-delete an appointment (set isDeleted = true)
+router.put(
+  "/delete/:id",
   checkAccessToken,
   checkRole("admin"),
   appointmentsController.deleteAppointment

@@ -15,7 +15,9 @@ router.get("/:id", serviceController.getServiceById);
 // Update a service
 router.put("/:id", serviceController.updateService);
 
-// Delete a service
-router.delete("/:id", serviceController.deleteService);
+// Soft-delete a service via PUT
+router.put("/delete/:id", serviceController.deleteService);
+
+// (Hard delete route removed) Use PUT /:id/soft-delete for soft-deletes.
 
 module.exports = router;

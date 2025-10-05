@@ -50,6 +50,7 @@ const appointmentsController = {
       });
     }
   },
+  // Soft-delete an appointment via PUT (handled by base.delete which will soft-delete)
   deleteAppointment: base.delete,
   lookupAppointment: async (req, res) => {
     try {

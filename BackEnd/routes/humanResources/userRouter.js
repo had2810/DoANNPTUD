@@ -24,9 +24,9 @@ router.get(
 //Update User
 router.put("/:id", checkAccessToken, userController.updateUser);
 
-//Delete User
-router.delete(
-  "/:id",
+// Soft-delete User
+router.put(
+  "/delete/:id",
   checkAccessToken,
   checkRole("admin"),
   userController.deleteUser

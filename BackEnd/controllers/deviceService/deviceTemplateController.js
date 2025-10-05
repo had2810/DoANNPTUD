@@ -12,7 +12,7 @@ const deviceTemplateController = {
   getDeviceTemplateById: base.getById,
   // Update a device template by ID
   updateDeviceTemplateById: base.update,
-  // Delete a device template by ID
+  // Soft-delete a device template via PUT (use base.delete which soft-deletes by default)
   deleteDeviceTemplateById: base.delete,
 };
 
