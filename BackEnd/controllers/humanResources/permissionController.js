@@ -1,0 +1,64 @@
+import express from "express";
+import Permission from "../../models/humanResources/permissions.model.js";
+
+const permissionController = {
+  // Add Permission
+  addPermission: async (req, res) => {
+    try {
+      const { _id, role, permissions } = req.body;
+      const permission = new Permission({
+        _id,
+        role,
+        permissions,
+      });
+      const newPermission = await permission.save();
+      res.status(201).json(newPermission);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  },
+
+  // Get Permissions
+  getPermissions: async (req, res) => {
+    try {
+      const permissions = await Permission.find();
+      res.status(200).json(permissions);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  },
+
+  // Update Permission
+  updatePermission: async (req, res) => {
+    try {
+      const { role, permissions } = req.body;
+      const id = req.params.id;
+      const permission = await Permission.findOneAndUpdate(
+        { _id: id },
+        { role, permissions },
+        { new: true }
+      );
+      if (!permission) {
+        return res.status(404).json({ message: "Permission not found" });
+      }
+      res.status(200).json(permission);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  },
+
+  // Delete Permission
+  deletePermission: async (req, res) => {
+    try {
+      const permission = await Permission.findOneAndDelete(req.params.id);
+      if (!permission) {
+        res.status(404).json({ message: "Permission not found" });
+      }
+      res.status(200).json({ message: "Permission deleted" });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  },
+};
+
+export default permissionController;
