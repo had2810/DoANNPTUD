@@ -1,13 +1,9 @@
-const express = require("express");
 const adminService = require("../../services/humanResources/adminService");
-const {
-  generateAccessToken,
-  generateRefreshToken,
-} = require("../../utils/jwt");
+const jwt = require("jsonwebtoken");
 const _ = require("lodash");
 
 const adminController = {
-  //Add Admin
+  // ➕ Register Admin
   registerAdmin: async (req, res) => {
     try {
       const admin = await adminService.createAdmin(req.body);
@@ -17,37 +13,52 @@ const adminController = {
     }
   },
 
-  // Login Admin
+  // 🔑 Login Admin
   loginAdmin: async (req, res) => {
     try {
       const admin = await adminService.checkPassword(
         req.body.email,
         req.body.password
       );
-      const accessToken = generateAccessToken({
-        id: admin._id,
-        email: admin.email,
-        role: admin.role,
-      });
 
-      const refreshToken = generateRefreshToken({
-        id: admin._id,
-        email: admin.email,
-        role: admin.role,
+      // Tạo JWT token
+      const token = jwt.sign(
+        {
+          id: admin._id,
+          exp: Math.floor(Date.now() / 1000) + 15 * 60, // Hết hạn sau 15 phút
+        },
+        process.env.JWT_SECRET || "NNPTUD"
+      );
+
+      // Ghi token vào cookie
+      res.cookie("token", `Bearer ${token}`, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
       });
 
       res.status(200).json({
         message: "Login successful",
-        admin,
-        accessToken,
-        refreshToken,
+        admin: _.omit(admin.toObject(), ["password"]),
+        token, // Trả về token trong response
       });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(401).json({ message: error.message });
     }
   },
 
-  // Get All Admins
+  // ➖ Logout Admin
+  logoutAdmin: async (req, res) => {
+    try {
+      res.cookie("token", "", { maxAge: 0 }); // Xóa cookie
+      res.status(200).json({ message: "Logout successful" });
+    } catch (error) {
+      res.status(500).json({ message: "Logout failed", error: error.message });
+    }
+  },
+
+  // 📋 Get All Admins
   getAllAdmins: async (req, res) => {
     try {
       const admins = await adminService.getAll();
@@ -57,7 +68,7 @@ const adminController = {
     }
   },
 
-  // Get An Admin
+  // 👤 Get One Admin
   getAdmin: async (req, res) => {
     try {
       const admin = await adminService.getById(req.params.id);
@@ -67,13 +78,12 @@ const adminController = {
     }
   },
 
-  // Update An Admin
+  // ✏️ Update Admin
   updateAdmin: async (req, res) => {
     try {
       const updateData = _.pick(req.body, [
         "firstName",
         "lastName",
-        "fullName",
         "email",
         "phoneNumber",
         "avatar_url",
@@ -81,43 +91,36 @@ const adminController = {
       ]);
 
       const admin = await adminService.updateAdmin(req.params.id, updateData);
-      res.status(200).json({
-        message: "Admin updated successfully",
-        admin,
-      });
+      res.status(200).json({ message: "Admin updated successfully", admin });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
   },
 
-  // Delete An Admin
+  // ❌ Delete Admin (soft delete)
   deleteAdmin: async (req, res) => {
     try {
-      const admin = await adminService.delete(req.params.id);
-      res.status(200).json({
-        message: "Admin deleted successfully",
-        id: admin._id,
-        email: admin.email,
-      });
+      await adminService.delete(req.params.id);
+      res.status(200).json({ message: "Admin deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
   },
 
-  // Change Password
+  // 🔐 Change Password
   changePassword: async (req, res) => {
     try {
-      const updateData = _.pick(req.body, ["oldPassword", "newPassword"]);
-      if (!updateData.oldPassword || !updateData.newPassword) {
-        return res.status(400).json({ message: "Missing old or new password" });
+      const { oldPassword, newPassword } = req.body;
+      if (!oldPassword || !newPassword) {
+        return res.status(400).json({ message: "Missing passwords" });
       }
 
-      const admin = await adminService.changePassword(
+      await adminService.changePassword(
         req.params.id,
-        updateData.oldPassword,
-        updateData.newPassword
+        oldPassword,
+        newPassword
       );
-      res.status(200).json({ message: "Password changed successfully", admin });
+      res.status(200).json({ message: "Password changed successfully" });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }

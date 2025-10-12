@@ -1,13 +1,9 @@
-const express = require("express");
 const employeesService = require("../../services/humanResources/employeesService");
-const {
-  generateAccessToken,
-  generateRefreshToken,
-} = require("../../utils/jwt");
+const jwt = require("jsonwebtoken");
 const _ = require("lodash");
 
 const EmployeeController = {
-  // Add New Employee
+  // ➕ Add Employee
   addEmployee: async (req, res) => {
     try {
       const employee = await employeesService.createEmployee(req.body);
@@ -17,35 +13,52 @@ const EmployeeController = {
     }
   },
 
-  // Login Employee
+  // 🔑 Login Employee
   loginEmployee: async (req, res) => {
     try {
       const employee = await employeesService.checkPassword(
         req.body.email,
         req.body.password
       );
-      const accessToken = generateAccessToken({
-        id: employee._id,
-        email: employee.email,
-        role: employee.role,
+
+      // Tạo JWT token
+      const token = jwt.sign(
+        {
+          id: employee._id,
+          exp: Math.floor(Date.now() / 1000) + 15 * 60, // Hết hạn sau 15 phút
+        },
+        process.env.JWT_SECRET || "NNPTUD"
+      );
+
+      // Ghi token vào cookie
+      res.cookie("token", `Bearer ${token}`, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
       });
-      const refreshToken = generateRefreshToken({
-        id: employee._id,
-        email: employee.email,
-        role: employee.role,
-      });
+
       res.status(200).json({
         message: "Login successful",
-        employee,
-        accessToken,
-        refreshToken,
+        employee: _.omit(employee.toObject(), ["password"]),
+        token, // Trả về token trong response
       });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(401).json({ message: error.message });
     }
   },
 
-  //Get An Employee
+  // ➖ Logout Employee
+  logoutEmployee: async (req, res) => {
+    try {
+      res.cookie("token", "", { maxAge: 0 }); // Xóa cookie
+      res.status(200).json({ message: "Logout successful" });
+    } catch (error) {
+      res.status(500).json({ message: "Logout failed", error: error.message });
+    }
+  },
+
+  // 👤 Get Employee
   getEmployee: async (req, res) => {
     try {
       const employee = await employeesService.getById(req.params.id);
@@ -55,7 +68,7 @@ const EmployeeController = {
     }
   },
 
-  // Get All Employees
+  // 📋 Get All Employees
   getAllEmployees: async (req, res) => {
     try {
       const employees = await employeesService.getAll();
@@ -65,17 +78,15 @@ const EmployeeController = {
     }
   },
 
-  // Update Employee
+  // ✏️ Update Employee
   updateEmployee: async (req, res) => {
     try {
       const updateData = _.pick(req.body, [
         "firstName",
         "lastName",
-        "fullName",
         "email",
         "phoneNumber",
         "address",
-        "role",
         "avatar_url",
         "status",
       ]);
@@ -90,38 +101,26 @@ const EmployeeController = {
     }
   },
 
-  // Delete Employee
+  // ❌ Delete Employee
   deleteEmployee: async (req, res) => {
     try {
-      const isHard = req.method === "DELETE" || req.query.hard === "true";
-      const result = await employeesService.deleteEmployee(req.params.id, {
-        hard: isHard,
-      });
-      res.status(200).json({
-        message: isHard ? "Employee hard-deleted" : "Employee soft-deleted",
-        id: req.params.id,
-        result,
-      });
+      await employeesService.deleteEmployee(req.params.id);
+      res.status(200).json({ message: "Employee soft-deleted" });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
   },
 
-  // Change Password
+  // 🔐 Change Password
   changePassword: async (req, res) => {
     try {
-      const updateData = _.pick(req.body, ["oldPassword", "newPassword"]);
-      if (!updateData.oldPassword || !updateData.newPassword) {
-        return res.status(400).json({ message: "Missing old or new password" });
-      }
-      const employee = await employeesService.changePassword(
+      const { oldPassword, newPassword } = req.body;
+      await employeesService.changePassword(
         req.params.id,
-        updateData.oldPassword,
-        updateData.newPassword
+        oldPassword,
+        newPassword
       );
-      res
-        .status(200)
-        .json({ message: "Password changed successfully", employee });
+      res.status(200).json({ message: "Password changed successfully" });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }

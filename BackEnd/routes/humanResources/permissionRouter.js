@@ -1,18 +1,41 @@
 const express = require("express");
 const permissionController = require("../../controllers/humanResources/permissionController.js");
+const { authenticate, authorize } = require("../../utils/authHandler.js");
 
 const permissionRouter = express.Router();
 
-// Add Permission
-permissionRouter.post("/add", permissionController.addPermission);
+/* ---------- PRIVATE (Require Authentication and Admin Role) ---------- */
 
-// Get Permissions
-permissionRouter.get("/", permissionController.getPermissions);
+// Add Permission (Admin only)
+permissionRouter.post(
+  "/add",
+  authenticate,
+  authorize("Admin"),
+  permissionController.addPermission
+);
 
-// Update Permission
-permissionRouter.put("/update/:id", permissionController.updatePermission);
+// Get Permissions (Admin only)
+permissionRouter.get(
+  "/",
+  authenticate,
+  authorize("Admin"),
+  permissionController.getPermissions
+);
 
-// Soft-delete permission via PUT
-permissionRouter.put("/delete/:id", permissionController.deletePermission);
+// Update Permission (Admin only)
+permissionRouter.put(
+  "/update/:id",
+  authenticate,
+  authorize("Admin"),
+  permissionController.updatePermission
+);
+
+// Soft-delete Permission (Admin only)
+permissionRouter.put(
+  "/delete/:id",
+  authenticate,
+  authorize("Admin"),
+  permissionController.deletePermission
+);
 
 module.exports = permissionRouter;

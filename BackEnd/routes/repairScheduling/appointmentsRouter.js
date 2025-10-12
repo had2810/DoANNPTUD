@@ -1,32 +1,29 @@
 const express = require("express");
 const appointmentsController = require("../../controllers/repairScheduling/appointmentsController.js");
-const { checkAccessToken } = require("../../middleware/authJwtMiddleware.js");
-const { checkRole } = require("../../middleware/checkRoleMiddleware.js");
+const { authenticate, authorize } = require("../../utils/authHandler.js");
 
 const router = express.Router();
 
-// Create a new appointment
-router.post("/", checkAccessToken, appointmentsController.createAppointment);
+// Create a new appointment (User only)
+router.post("/", authenticate, authorize("User"), appointmentsController.createAppointment);
 
-// Get all appointments
-router.get("/", checkAccessToken, appointmentsController.getAppointments);
+// Get all appointments (Admin only)
+router.get("/", authenticate, authorize("Admin"), appointmentsController.getAppointments);
 
-// Get Appointment With Phone & OderID
+// Get Appointment With Phone & OrderID (Public)
 router.get("/lookup", appointmentsController.lookupAppointment);
 
-// Get an appointment by ID
-router.get("/:id", checkAccessToken, appointmentsController.getAppointmentById);
+// Get an appointment by ID (Authenticated)
+router.get("/:id", authenticate, appointmentsController.getAppointmentById);
 
-// Update an appointment
-router.put("/:id", checkAccessToken, appointmentsController.updateAppointment);
+// Update an appointment (Admin only)
+router.put("/:id", authenticate, authorize("Admin"), appointmentsController.updateAppointment);
 
-// (Hard delete route removed) Use PUT /:id/soft-delete for soft-deletes.
-
-// Soft-delete an appointment (set isDeleted = true)
+// Soft-delete an appointment (Admin only)
 router.put(
   "/delete/:id",
-  checkAccessToken,
-  checkRole("admin"),
+  authenticate,
+  authorize("Admin"),
   appointmentsController.deleteAppointment
 );
 

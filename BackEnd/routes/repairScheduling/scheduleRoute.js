@@ -1,39 +1,40 @@
 const scheduleController = require("../../controllers/repairScheduling/scheduleController.js");
 const express = require("express");
+const { authenticate, authorize } = require("../../utils/authHandler.js");
 
 const router = express.Router();
 
-// Get Available Time By Date
+// Get Available Time By Date (Public)
 router.get(
   "/available-time/by-date",
   scheduleController.getAvailableTimeByDate
 );
 
-// Get Available Time By Month
+// Get Available Time By Month (Public)
 router.get(
   "/available-time/by-month",
   scheduleController.getAvailableTimeByMonth
 );
 
-// Get An Available Time
+// Get An Available Time (Public)
 router.get(
   "/available-time/employee-work-schedule",
   scheduleController.getAnAvailableTime
 );
 
-// Get Available Consultant Times
+// Get Available Consultant Times (Public)
 router.get(
   "/available-consultant-times",
   scheduleController.getAvailableConsultantTimes
 );
 
-// Get Month Schedule
-router.get("/monthly-status", scheduleController.getMonthSchedule);
+// Get Month Schedule (Authenticated)
+router.get("/monthly-status", authenticate, scheduleController.getMonthSchedule);
 
-// Set Day Off
-router.post("/set-day-off", scheduleController.setDayOff);
+// Set Day Off (Admin only)
+router.post("/set-day-off", authenticate, authorize("Admin"), scheduleController.setDayOff);
 
-// Remove Day Off
-router.post("/remove-day-off", scheduleController.removeDayOff);
+// Remove Day Off (Admin only)
+router.post("/remove-day-off", authenticate, authorize("Admin"), scheduleController.removeDayOff);
 
 module.exports = router;

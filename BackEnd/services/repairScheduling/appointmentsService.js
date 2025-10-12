@@ -5,7 +5,7 @@ const Service = require("../../schemas/deviceService/service.model");
 const EmployeeWork = require("../../schemas/repairScheduling/employeeWork.model");
 const availableTimeService = require("./availableTimeService");
 const dayjs = require("dayjs");
-const Employees = require("../../schemas/humanResources/employees.model");
+const User = require("../../schemas/humanResources/user.model");
 const { sendMail } = require("../emailService");
 
 const base = baseService(Appointment, {
@@ -22,7 +22,7 @@ const appointmentsService = {
     if (!employeeId || !appointmentTime) return false;
 
     // Kiểm tra xem nhân viên có role là 2 không
-    const employee = await Employees.findById(employeeId);
+    const employee = await User.findById(employeeId);
     if (!employee) {
       throw new Error("Không tìm thấy thông tin nhân viên");
     }

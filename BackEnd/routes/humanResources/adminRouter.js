@@ -1,10 +1,10 @@
 const express = require("express");
 const adminController = require("../../controllers/humanResources/adminController.js");
-const { checkAccessToken } = require("../../middleware/authJwtMiddleware.js");
-const { checkRole } = require("../../middleware/checkRoleMiddleware.js");
+const { authenticate, authorize } = require("../../utils/authHandler.js");
 
 const router = express.Router();
-/* Public routes */
+
+/* ---------- PUBLIC ---------- */
 
 // Register Admin
 router.post("/register", adminController.registerAdmin);
@@ -12,31 +12,27 @@ router.post("/register", adminController.registerAdmin);
 // Login Admin
 router.post("/login", adminController.loginAdmin);
 
-/* Private routes */
+/* ---------- PRIVATE (Require Authentication) ---------- */
 
-// Get All Admins
-router.get(
-  "/",
-  checkAccessToken,
-  checkRole("admin"),
-  adminController.getAllAdmins
-);
+// Get All Admins (Admin only)
+router.get("/", authenticate, authorize("Admin"), adminController.getAllAdmins);
 
-// Get An Admin
-router.get("/:id", checkAccessToken, adminController.getAdmin);
+// Get Single Admin (Self or Admin)
+router.get("/:id", authenticate, adminController.getAdmin);
 
-// Update An Admin
-router.put("/:id", checkAccessToken, adminController.updateAdmin);
+// Update Admin (Self)
+router.put("/:id", authenticate, adminController.updateAdmin);
 
-// Soft-delete an Admin
+// Soft-delete Admin (Admin only)
 router.put(
   "/delete/:id",
-  checkAccessToken,
-  checkRole("admin"),
+  authenticate,
+  authorize("Admin"),
   adminController.deleteAdmin
 );
 
-// Change Password
-router.put("/:id/password", checkAccessToken, adminController.changePassword);
+// Change Password (Self)
+router.put("/:id/password", authenticate, adminController.changePassword);
 
+router.post("/logout", adminController.logoutAdmin);
 module.exports = router;

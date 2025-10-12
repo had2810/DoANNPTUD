@@ -1,92 +1,135 @@
-const Employees = require("../../schemas/humanResources/employees.model");
+const User = require("../../schemas/humanResources/user.model");
 const baseService = require("../baseService");
+const changePasswordService = require("../changePasswordService");
 const EmployeeWorkSchedule = require("../../schemas/repairScheduling/employeeWork.model");
 const Appointment = require("../../schemas/repairScheduling/appointments.model");
-const { hashPassword } = require("../../utils/passwordHash");
+const { comparePassword } = require("../../utils/passwordHash");
 const mongoose = require("mongoose");
 
-// Gọi baseService 1 lần với populateFields (nếu Employees có field 'role')
-const base = baseService(Employees, { populateFields: ["role"] });
+const base = baseService(User, { populateFields: ["role"] });
 
 const employeesService = {
   ...base,
-
-  createEmployee: async (employeeData) => {
-    employeeData.password = await hashPassword(employeeData.password);
-    const employee = await base.create(employeeData);
-    await EmployeeWorkSchedule.create({
-      employeeId: employee._id,
-      startTime: new Date(),
-      endTime: new Date(),
-      startHour: "08:00",
-      endHour: "17:00",
-      status: "Đang trực",
-      note: "Chào mừng bạn đã đến với công ty",
-    });
-
+  
+  // Override base methods to filter by role = 2 (Employee)
+  getAll: async (filter = {}) => {
+    return base.getAll({ ...filter, role: 2 });
+  },
+  
+  getById: async (id) => {
+    const employee = await base.getById(id);
+    if (employee && employee.role !== 2) {
+      throw new Error("Employee not found");
+    }
     return employee;
   },
+  
+  update: async (id, data) => {
+    const employee = await base.getById(id);
+    if (employee && employee.role !== 2) {
+      throw new Error("Employee not found");
+    }
+    return base.update(id, data);
+  },
+  
+  delete: async (id) => {
+    const employee = await base.getById(id);
+    if (employee && employee.role !== 2) {
+      throw new Error("Employee not found");
+    }
+    return base.delete(id);
+  },
 
+  // ➕ Tạo nhân viên mới + khởi tạo lịch trực mặc định
+  createEmployee: async (employeeData) => {
+    try {
+      employeeData.role = 2; // Set role to Employee
+      // Không cần hashPassword, middleware pre("save") sẽ xử lý
+      const employee = await base.create(employeeData);
+
+      await EmployeeWorkSchedule.create({
+        employeeId: employee._id,
+        startTime: new Date(),
+        endTime: new Date(),
+        startHour: "08:00",
+        endHour: "17:00",
+        status: "Đang trực",
+        note: "Chào mừng bạn đã đến với công ty",
+      });
+
+      return employee;
+    } catch (error) {
+      throw new Error(`Failed to create employee: ${error.message}`);
+    }
+  },
+
+  // 🧩 Kiểm tra đăng nhập
+  checkPassword: async (email, password) => {
+    try {
+      const employee = await User.findOne({
+        email,
+        role: 2, // Employee role
+        isDeleted: { $ne: true },
+      }).select("+password");
+      if (!employee) {
+        throw new Error("Employee not found");
+      }
+      const isMatch = await comparePassword(password, employee.password);
+      if (!isMatch) {
+        throw new Error("Invalid password");
+      }
+      return employee;
+    } catch (error) {
+      throw new Error(`Login failed: ${error.message}`);
+    }
+  },
+
+  // ✏️ Cập nhật nhân viên
   updateEmployee: async (id, newData) => {
-    if (newData.firstName && newData.lastName) {
-      newData.fullName =
-        newData.firstName.trim() + " " + newData.lastName.trim();
+    try {
+      if (newData.firstName && newData.lastName) {
+        newData.fullName = `${newData.firstName.trim()} ${newData.lastName.trim()}`;
+      }
+      // Không cần hashPassword, middleware pre("save") sẽ xử lý
+      return await base.update(id, newData);
+    } catch (error) {
+      throw new Error(`Failed to update employee: ${error.message}`);
     }
-    if (newData.password) {
-      newData.password = await hashPassword(newData.password);
-    }
-    return await base.update(id, newData);
   },
 
-  changePassword: async (id, oldPassword, newPassword) => {
-    return await changePasswordService(Employees).changePassword(
-      id,
-      oldPassword,
-      newPassword
-    );
-  },
-
+  // ❌ Xóa nhân viên + xử lý dữ liệu liên quan
   deleteEmployee: async (id, opts = {}) => {
-    const { hard = false } = opts || {};
-    const objectId = new mongoose.Types.ObjectId(id);
-    console.log("🔄 XÓA NHÂN VIÊN:", id);
-    console.log("👉 ObjectId ép kiểu:", objectId);
+    try {
+      const { hard = false } = opts;
+      const objectId = new mongoose.Types.ObjectId(id);
 
-    const relatedSchedules = await EmployeeWorkSchedule.find({
-      employeeId: objectId,
-    });
-    const relatedAppointments = await Appointment.find({
-      employeeId: objectId,
-    });
+      await EmployeeWorkSchedule.updateMany(
+        { employeeId: objectId },
+        { isDeleted: true }
+      );
+      await Appointment.updateMany(
+        { employeeId: objectId },
+        { $unset: { employeeId: "" } }
+      );
 
-    console.log(`📋 Schedule tìm được: ${relatedSchedules.length}`);
-    console.log(`📋 Appointment tìm được: ${relatedAppointments.length}`);
-
-    // Soft-delete employee work schedules related to this employee
-    const scheduleDeleteResult = await EmployeeWorkSchedule.updateMany(
-      { employeeId: objectId },
-      { isDeleted: true }
-    );
-    const appointmentUpdateResult = await Appointment.updateMany(
-      { employeeId: objectId },
-      { $unset: { employeeId: "" } }
-    );
-
-    let employeeDeleteResult;
-    if (hard) {
-      // Perform hard delete
-      employeeDeleteResult = await base.hardDelete(id);
-    } else {
-      employeeDeleteResult = await base.delete(id); // soft-delete
+      if (hard) return await base.hardDelete(id);
+      return await base.delete(id);
+    } catch (error) {
+      throw new Error(`Failed to delete employee: ${error.message}`);
     }
+  },
 
-    console.log(`✅ Đã xóa ${scheduleDeleteResult.deletedCount} schedule`);
-    console.log(
-      `✅ Đã gỡ liên kết khỏi ${appointmentUpdateResult.modifiedCount} appointments`
-    );
-    console.log(`✅ Nhân viên đã xóa:`, employeeDeleteResult);
-
-    return { success: true };
+  // 🔐 Đổi mật khẩu
+  changePassword: async (id, oldPassword, newPassword) => {
+    try {
+      return await changePasswordService(User).changePassword(
+        id,
+        oldPassword,
+        newPassword
+      );
+    } catch (error) {
+      throw new Error(`Failed to change password: ${error.message}`);
+    }
   },
 };
 

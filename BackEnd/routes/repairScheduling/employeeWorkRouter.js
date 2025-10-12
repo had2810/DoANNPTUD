@@ -1,35 +1,34 @@
 const express = require("express");
 const employeeWorkController = require("../../controllers/repairScheduling/employeeWorkController.js");
-const { checkAccessToken } = require("../../middleware/authJwtMiddleware.js");
-const { checkRole } = require("../../middleware/checkRoleMiddleware.js");
+const { authenticate, authorize } = require("../../utils/authHandler.js");
 
 const router = express.Router();
 
-// Create a new employee work schedule
+// Create a new employee work schedule (Admin only)
 router.post(
   "/",
-  checkAccessToken,
-  checkRole("admin"),
+  authenticate,
+  authorize("Admin"),
   employeeWorkController.createEmployeeWork
 );
 
-// Get all employee work schedules
-router.get("/", checkAccessToken, employeeWorkController.getEmployeeWork);
+// Get all employee work schedules (Admin only)
+router.get("/", authenticate, authorize("Admin"), employeeWorkController.getEmployeeWork);
 
-// Get my employee work schedule
-router.get("/my", checkAccessToken, employeeWorkController.getMyEmployeeWork);
+// Get my employee work schedule (Employee only)
+router.get("/my", authenticate, authorize("Employee"), employeeWorkController.getMyEmployeeWork);
 
-// Get a specific employee work schedule by ID
-router.get("/:id", employeeWorkController.getEmployeeWorkById);
+// Get a specific employee work schedule by ID (Authenticated)
+router.get("/:id", authenticate, employeeWorkController.getEmployeeWorkById);
 
-// Update an employee work schedule by ID
-router.put("/:id", checkAccessToken, employeeWorkController.updateEmployeeWork);
+// Update an employee work schedule by ID (Admin only)
+router.put("/:id", authenticate, authorize("Admin"), employeeWorkController.updateEmployeeWork);
 
-// Soft-delete an employee work schedule by ID
+// Soft-delete an employee work schedule by ID (Admin only)
 router.put(
   "/delete/:id",
-  checkAccessToken,
-  checkRole("admin"),
+  authenticate,
+  authorize("Admin"),
   employeeWorkController.deleteEmployeeWork
 );
 

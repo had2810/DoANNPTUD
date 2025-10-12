@@ -4,7 +4,7 @@ const employeeWorkScheduleSchema = new mongoose.Schema(
   {
     employeeId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Employees",
+      ref: "User", // Reference to User with role = 2 (Employee)
       required: true,
     },
     startTime: { type: Date, required: true },

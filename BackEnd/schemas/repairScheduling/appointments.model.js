@@ -23,7 +23,7 @@ const appointmentSchema = new mongoose.Schema(
 
     employeeId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Employees",
+      ref: "User", // Reference to User with role = 2 (Employee)
     },
 
     appointmentTime: { type: Date, required: true },

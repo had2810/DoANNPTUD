@@ -25,7 +25,6 @@ const adminRoute = require("./routes/humanResources/adminRouter");
 const userRoute = require("./routes/humanResources/userRouter");
 const employeeRoute = require("./routes/humanResources/employeeRouter");
 const permissionRoute = require("./routes/humanResources/permissionRouter");
-const authJwtRouter = require("./routes/authJwtRouter");
 const deviceTemplateRoute = require("./routes/deviceService/deviceTemplateRouter");
 const serviceRouter = require("./routes/deviceService/serviceRouter");
 const partRouter = require("./routes/deviceService/partRouter");
@@ -58,28 +57,27 @@ mongoose.connection.on("disconnected", () => {
 });
 
 // Mount APIs
-app.use("/v1/auth", authJwtRouter);
 
 /* Api Human Resource */
-app.use("/v1/admin", adminRoute);
-app.use("/v1/user", userRoute);
-app.use("/v1/employee", employeeRoute);
-app.use("/v1/permission", permissionRoute);
+app.use("/admin", adminRoute);
+app.use("/user", userRoute);
+app.use("/employee", employeeRoute);
+app.use("/permission", permissionRoute);
 
 /* API Repair Scheduling */
-app.use("/v1/appointments", appointmentsRouter);
-app.use("/v1/employee-work", employeeWorkRoute);
-app.use("/v1/repair-status-device", repairStatusRouter);
+app.use("/appointments", appointmentsRouter);
+app.use("/employee-work", employeeWorkRoute);
+app.use("/repair-status-device", repairStatusRouter);
 
 /* Api Device Service */
-app.use("/v1/device-user", deviceUserRouter);
-app.use("/v1/device-template", deviceTemplateRoute);
-app.use("/v1/service", serviceRouter);
-app.use("/v1/part", partRouter);
-app.use("/v1/parts-inventory", partsInventoryRouter);
+app.use("/device-user", deviceUserRouter);
+app.use("/device-template", deviceTemplateRoute);
+app.use("/service", serviceRouter);
+app.use("/part", partRouter);
+app.use("/parts-inventory", partsInventoryRouter);
 
 /* Personal Schedule API */
-app.use("/v1/schedule", scheduleRoute);
+app.use("/schedule", scheduleRoute);
 
 // view engine setup (keep existing)
 app.set("views", path.join(__dirname, "views"));
@@ -92,15 +90,21 @@ app.use(function (req, res, next) {
   next(createError(404));
 });
 
-// error handler
+// Error handler
 app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
+  // Set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render("error");
+  // Log lỗi để debug
+  console.error("Error:", err.stack);
+
+  // Trả về JSON response thay vì render view
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+    ...(req.app.get("env") === "development" && { stack: err.stack }), // Chỉ gửi stack trace trong môi trường development
+  });
 });
 
 module.exports = app;

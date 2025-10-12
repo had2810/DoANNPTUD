@@ -1,46 +1,42 @@
 const express = require("express");
 const EmployeeController = require("../../controllers/humanResources/employeeController.js");
-const { checkAccessToken } = require("../../middleware/authJwtMiddleware.js");
-const { checkRole } = require("../../middleware/checkRoleMiddleware.js");
+const { authenticate, authorize } = require("../../utils/authHandler.js");
 
 const router = express.Router();
 
-// Add New Employee
-router.post(
-  "/add",
-  checkAccessToken,
-  checkRole("admin"),
-  EmployeeController.addEmployee
-);
+/* ---------- PUBLIC ---------- */
 
 // Login Employee
 router.post("/login", EmployeeController.loginEmployee);
 
-// Get An Employee
-router.get("/:id", checkAccessToken, EmployeeController.getEmployee);
+/* ---------- PRIVATE ---------- */
 
-// Get All Employees
-router.get("/", checkAccessToken, EmployeeController.getAllEmployees);
+// Add New Employee (Admin only)
+router.post(
+  "/add",
+  authenticate,
+  authorize("Admin"),
+  EmployeeController.addEmployee
+);
 
-// Update Employee
-router.put("/:id", checkAccessToken, EmployeeController.updateEmployee);
+// Get All Employees (Authenticated)
+router.get("/", authenticate, EmployeeController.getAllEmployees);
 
-// Delete Employee
-// Soft-delete Employee via PUT (admin only)
+// Get Single Employee (Authenticated)
+router.get("/:id", authenticate, EmployeeController.getEmployee);
+
+// Update Employee (Authenticated)
+router.put("/:id", authenticate, EmployeeController.updateEmployee);
+
+// Soft-delete Employee (Admin only)
 router.put(
   "/delete/:id",
-  checkAccessToken,
-  checkRole("admin"),
+  authenticate,
+  authorize("Admin"),
   EmployeeController.deleteEmployee
 );
 
-// (Hard delete route removed) Use PUT /:id/soft-delete for soft-deletes.
-
-// Change Password
-router.put(
-  "/:id/password",
-  checkAccessToken,
-  EmployeeController.changePassword
-);
-
+// Change Password (Authenticated)
+router.put("/:id/password", authenticate, EmployeeController.changePassword);
+router.post("/logout", EmployeeController.logoutEmployee);
 module.exports = router;

@@ -1,22 +1,23 @@
 const express = require("express");
 const serviceController = require("../../controllers/deviceService/serviceController.js");
+const { authenticate, authorize } = require("../../utils/authHandler.js");
 
 const router = express.Router();
 
-// Create a new service
-router.post("/", serviceController.createService);
+// Create a new service (Admin only)
+router.post("/", authenticate, authorize("Admin"), serviceController.createService);
 
-// Get all services
-router.get("/", serviceController.getAllServices);
+// Get all services (Authenticated)
+router.get("/", authenticate, serviceController.getAllServices);
 
-// Get a service by ID
-router.get("/:id", serviceController.getServiceById);
+// Get a service by ID (Authenticated)
+router.get("/:id", authenticate, serviceController.getServiceById);
 
-// Update a service
-router.put("/:id", serviceController.updateService);
+// Update a service (Admin only)
+router.put("/:id", authenticate, authorize("Admin"), serviceController.updateService);
 
-// Soft-delete a service via PUT
-router.put("/delete/:id", serviceController.deleteService);
+// Soft-delete a service (Admin only)
+router.put("/delete/:id", authenticate, authorize("Admin"), serviceController.deleteService);
 
 // (Hard delete route removed) Use PUT /:id/soft-delete for soft-deletes.
 

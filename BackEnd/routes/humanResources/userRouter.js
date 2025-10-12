@@ -1,38 +1,37 @@
 const express = require("express");
 const userController = require("../../controllers/humanResources/userController.js");
-const { checkAccessToken } = require("../../middleware/authJwtMiddleware.js");
-const { checkRole } = require("../../middleware/checkRoleMiddleware.js");
+const { authenticate, authorize } = require("../../utils/authHandler.js");
+
 const router = express.Router();
 
-//Register User
+/* ---------- PUBLIC ---------- */
+
+// Register User
 router.post("/register", userController.registerUser);
 
-//Login User
+// Login User
 router.post("/login", userController.loginUser);
 
-//Get An User
-router.get("/:id", checkAccessToken, userController.getUser);
+/* ---------- PRIVATE ---------- */
 
-//Get All Users
-router.get(
-  "/",
-  checkAccessToken,
-  checkRole("admin"),
-  userController.getAllUsers
-);
+// Get All Users (Admin only)
+router.get("/", authenticate, authorize("Admin"), userController.getAllUsers);
 
-//Update User
-router.put("/:id", checkAccessToken, userController.updateUser);
+// Get Single User (Authenticated)
+router.get("/:id", authenticate, userController.getUser);
 
-// Soft-delete User
+// Update User (Authenticated)
+router.put("/:id", authenticate, userController.updateUser);
+
+// Soft-delete User (Admin only)
 router.put(
   "/delete/:id",
-  checkAccessToken,
-  checkRole("admin"),
+  authenticate,
+  authorize("Admin"),
   userController.deleteUser
 );
 
-//Change Password
-router.put("/:id/password", checkAccessToken, userController.changePassword);
-
+// Change Password (Authenticated)
+router.put("/:id/password", authenticate, userController.changePassword);
+router.post("/logout", userController.logoutUser);
 module.exports = router;
