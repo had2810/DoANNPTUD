@@ -1,3 +1,5 @@
+// Get current user info (cookie-based auth)
+
 const express = require("express");
 const userController = require("../../controllers/humanResources/userController.js");
 const { authenticate, authorize } = require("../../utils/authHandler.js");
@@ -5,12 +7,6 @@ const { authenticate, authorize } = require("../../utils/authHandler.js");
 const router = express.Router();
 
 /* ---------- PUBLIC ---------- */
-
-// Register User
-router.post("/register", userController.registerUser);
-
-// Login User
-router.post("/login", userController.loginUser);
 
 /* ---------- PRIVATE ---------- */
 
@@ -33,5 +29,5 @@ router.put(
 
 // Change Password (Authenticated)
 router.put("/:id/password", authenticate, userController.changePassword);
-router.post("/logout", userController.logoutUser);
+// Đã chuyển logout sang authRouter
 module.exports = router;

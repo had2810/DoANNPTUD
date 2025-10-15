@@ -10,20 +10,25 @@ const base = baseService(User, { populateFields: ["role"] });
 
 const employeesService = {
   ...base,
-  
+
+  // Tìm employee theo email
+  findByEmail: async (email) => {
+    return await User.findOne({
+      email,
+      role: 2,
+      isDeleted: { $ne: true },
+    }).select("+password");
+  },
+
   // Override base methods to filter by role = 2 (Employee)
   getAll: async (filter = {}) => {
     return base.getAll({ ...filter, role: 2 });
   },
-  
+
   getById: async (id) => {
-    const employee = await base.getById(id);
-    if (employee && employee.role !== 2) {
-      throw new Error("Employee not found");
-    }
-    return employee;
+    return await base.getById(id);
   },
-  
+
   update: async (id, data) => {
     const employee = await base.getById(id);
     if (employee && employee.role !== 2) {
@@ -31,7 +36,7 @@ const employeesService = {
     }
     return base.update(id, data);
   },
-  
+
   delete: async (id) => {
     const employee = await base.getById(id);
     if (employee && employee.role !== 2) {
@@ -60,27 +65,6 @@ const employeesService = {
       return employee;
     } catch (error) {
       throw new Error(`Failed to create employee: ${error.message}`);
-    }
-  },
-
-  // 🧩 Kiểm tra đăng nhập
-  checkPassword: async (email, password) => {
-    try {
-      const employee = await User.findOne({
-        email,
-        role: 2, // Employee role
-        isDeleted: { $ne: true },
-      }).select("+password");
-      if (!employee) {
-        throw new Error("Employee not found");
-      }
-      const isMatch = await comparePassword(password, employee.password);
-      if (!isMatch) {
-        throw new Error("Invalid password");
-      }
-      return employee;
-    } catch (error) {
-      throw new Error(`Login failed: ${error.message}`);
     }
   },
 

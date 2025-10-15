@@ -15,7 +15,20 @@ var app = express();
 // use JSON/body parsing with larger limit
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
-app.use(cors());
+const allowedOrigins = [process.env.CLIENT_URL || "http://localhost:8080"];
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Cho phép cả undefined (cho postman) và các origin hợp lệ
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(morgan("common"));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
@@ -25,6 +38,7 @@ const adminRoute = require("./routes/humanResources/adminRouter");
 const userRoute = require("./routes/humanResources/userRouter");
 const employeeRoute = require("./routes/humanResources/employeeRouter");
 const permissionRoute = require("./routes/humanResources/permissionRouter");
+const authRoute = require("./routes/authRouter");
 const deviceTemplateRoute = require("./routes/deviceService/deviceTemplateRouter");
 const serviceRouter = require("./routes/deviceService/serviceRouter");
 const partRouter = require("./routes/deviceService/partRouter");
@@ -48,6 +62,8 @@ mongoose
     // don't exit here to allow app to load for dev purposes; optional: process.exit(1);
   });
 
+
+  
 mongoose.connection.on("error", (err) => {
   console.error("❌ MongoDB connection lost:", err);
 });
@@ -63,7 +79,8 @@ app.use("/admin", adminRoute);
 app.use("/user", userRoute);
 app.use("/employee", employeeRoute);
 app.use("/permission", permissionRoute);
-
+app.use("/humanResources/auth", authRoute);
+app.use("/auth", authRoute);
 /* API Repair Scheduling */
 app.use("/appointments", appointmentsRouter);
 app.use("/employee-work", employeeWorkRoute);

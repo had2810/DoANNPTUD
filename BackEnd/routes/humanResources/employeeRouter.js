@@ -6,24 +6,15 @@ const router = express.Router();
 
 /* ---------- PUBLIC ---------- */
 
-// Login Employee
-router.post("/login", EmployeeController.loginEmployee);
+// Đã chuyển login sang authRouter
 
 /* ---------- PRIVATE ---------- */
-
-// Add New Employee (Admin only)
-router.post(
-  "/add",
-  authenticate,
-  authorize("Admin"),
-  EmployeeController.addEmployee
-);
 
 // Get All Employees (Authenticated)
 router.get("/", authenticate, EmployeeController.getAllEmployees);
 
 // Get Single Employee (Authenticated)
-router.get("/:id", authenticate, EmployeeController.getEmployee);
+router.get(":/id", authenticate, EmployeeController.getEmployee);
 
 // Update Employee (Authenticated)
 router.put("/:id", authenticate, EmployeeController.updateEmployee);
@@ -38,5 +29,5 @@ router.put(
 
 // Change Password (Authenticated)
 router.put("/:id/password", authenticate, EmployeeController.changePassword);
-router.post("/logout", EmployeeController.logoutEmployee);
+// Đã chuyển logout sang authRouter
 module.exports = router;

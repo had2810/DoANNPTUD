@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "components/*": ["src/components/*"],
+      "ui/*": ["src/components/ui/*"],
+      "profile/*": ["src/components/profile/*"],
+      "dialogs/*": ["src/components/dialogs/*"],
+      "layout/*": ["src/components/layout/*"],
+      "tables/*": ["src/components/tables/*"],
+      "lib/*": ["src/lib/*"],
+      "hooks/*": ["src/hooks/*"],
+      "@styles/*": ["src/styles/*"]
+    }
+  },
+  "include": ["src"]
+}

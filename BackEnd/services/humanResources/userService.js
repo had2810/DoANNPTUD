@@ -8,28 +8,33 @@ const base = baseService(User, { populateFields: ["role"] });
 
 const userService = {
   ...base,
-  
+
+  // Tìm user theo email
+  findByEmail: async (email) => {
+    return await User.findOne({
+      email,
+      role: 4,
+      isDeleted: { $ne: true },
+    }).select("+password");
+  },
+
   // Override base methods to filter by role = 4 (User)
   getAll: async (filter = {}) => {
     return base.getAll({ ...filter, role: 4 });
   },
-  
+
   getById: async (id) => {
-    const user = await base.getById(id);
-    if (user && user.role !== 4) {
-      throw new Error("User not found");
-    }
-    return user;
+    return await base.getById(id);
   },
-  
+
   update: async (id, data) => {
     const user = await base.getById(id);
-    if (user && user.role !== 4) {
+    if (user && user.role != 4) {
       throw new Error("User not found");
     }
     return base.update(id, data);
   },
-  
+
   delete: async (id) => {
     const user = await base.getById(id);
     if (user && user.role !== 4) {
@@ -62,27 +67,6 @@ const userService = {
       return newUser;
     } catch (error) {
       throw new Error(`Failed to create user: ${error.message}`);
-    }
-  },
-
-  // 🧩 Kiểm tra đăng nhập
-  checkPassword: async (email, password) => {
-    try {
-      const user = await User.findOne({
-        email,
-        role: 4, // User role
-        isDeleted: { $ne: true },
-      }).select("+password");
-      if (!user) {
-        throw new Error("User not found");
-      }
-      const isMatch = await comparePassword(password, user.password);
-      if (!isMatch) {
-        throw new Error("Invalid password");
-      }
-      return user;
-    } catch (error) {
-      throw new Error(`Login failed: ${error.message}`);
     }
   },
 

@@ -6,11 +6,7 @@ const router = express.Router();
 
 /* ---------- PUBLIC ---------- */
 
-// Register Admin
-router.post("/register", adminController.registerAdmin);
-
-// Login Admin
-router.post("/login", adminController.loginAdmin);
+// Đã chuyển register, login sang authRouter
 
 /* ---------- PRIVATE (Require Authentication) ---------- */
 
@@ -34,5 +30,5 @@ router.put(
 // Change Password (Self)
 router.put("/:id/password", authenticate, adminController.changePassword);
 
-router.post("/logout", adminController.logoutAdmin);
+// Đã chuyển logout sang authRouter
 module.exports = router;
