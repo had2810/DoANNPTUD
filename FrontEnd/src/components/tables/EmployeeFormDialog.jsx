@@ -92,6 +92,7 @@ const EmployeeFormDialog = ({ open, onOpenChange, employee, onSave }) => {
   const onSubmit = async (values) => {
     try {
       setIsSubmitting(true);
+
       if (isEditMode && employee) {
         await employeeService.updateEmployee(employee._id, {
           ...values,
@@ -102,10 +103,17 @@ const EmployeeFormDialog = ({ open, onOpenChange, employee, onSave }) => {
           description: "Thông tin nhân viên đã được cập nhật.",
         });
       } else {
+        // 👉 Xác định type dựa trên role
+        let type = "employee"; // mặc định
+        if (values.role === "2") type = "employee";
+        else if (values.role === "3") type = "consultant";
+
         await employeeService.signupEmployee({
           ...values,
           password: "TeachMate@123",
+          type, // Gửi type tương ứng lên server
         });
+
         toast({
           title: "Thành công!",
           description: "Nhân viên mới đã được thêm.",
@@ -113,9 +121,7 @@ const EmployeeFormDialog = ({ open, onOpenChange, employee, onSave }) => {
       }
 
       onOpenChange(false);
-      if (onSave) {
-        onSave();
-      }
+      if (onSave) onSave();
     } catch (error) {
       console.error("Error submitting form:", error);
       toast({

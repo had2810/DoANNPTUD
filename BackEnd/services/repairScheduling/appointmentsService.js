@@ -260,13 +260,14 @@ const appointmentsService = {
       repairStatus,
     };
   },
-
-  async findMany(filter = {}) {
+  // 🧠 Đếm tổng số lượng (dùng cho phân trang)
+  async countDocuments(filter = {}) {
+    return await Appointment.countDocuments(filter);
+  },
+  // ✅ KHÔNG dùng async để giữ nguyên Query (sửa lỗi .skip)
+  findMany(filter = {}) {
     return Appointment.find(filter).populate([
-      {
-        path: "userId",
-        select: "-password -refreshToken", // loại bỏ thông tin nhạy cảm nếu có
-      },
+      { path: "userId", select: "-password -refreshToken" },
       { path: "deviceTemplateId" },
       { path: "serviceId" },
       { path: "employeeId" },

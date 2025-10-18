@@ -32,7 +32,7 @@ const BookingHistory = () => {
   const fetchBookings = async () => {
     setLoading(true);
     try {
-      const res = await appointmentService.getAppointments();
+      const res = await appointmentService.getMyAppointments();
       const allAppointments = res.data || res;
 
       const bookingsWithStatus = await Promise.all(

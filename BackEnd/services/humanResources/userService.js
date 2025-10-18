@@ -15,7 +15,9 @@ const userService = {
       email,
       role: 4,
       isDeleted: { $ne: true },
-    }).select("+password");
+    })
+      .select("+password")
+      .populate("role");
   },
 
   // Override base methods to filter by role = 4 (User)
@@ -86,11 +88,12 @@ const userService = {
   // 🔐 Đổi mật khẩu
   changePassword: async (id, oldPassword, newPassword) => {
     try {
-      return await changePasswordService(User).changePassword(
+      const result = await changePasswordService(User).changePassword(
         id,
         oldPassword,
         newPassword
       );
+      return result; // ✅ đảm bảo controller nhận được message từ service
     } catch (error) {
       throw new Error(`Failed to change password: ${error.message}`);
     }

@@ -33,6 +33,7 @@ const UpdateAccount = () => {
   const userInfo = data?.data;
 
   useEffect(() => {
+    console.log("[UpdateAccount] userInfo:", userInfo);
     if (userInfo && !resetUploadPreview) {
       setFormData({
         firstName: userInfo.firstName || "",

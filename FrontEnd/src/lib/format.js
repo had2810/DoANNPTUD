@@ -1,5 +1,7 @@
 const formatDate = (dateString) => {
+  if (!dateString) return "—";
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "—";
   return new Intl.DateTimeFormat("vi-VN", {
     year: "numeric",
     month: "2-digit",
@@ -28,9 +30,9 @@ const formatDuration = (minutes) => {
 };
 
 const formatDateTimeFull = (dateString) => {
-  if (!dateString) return "Không xác định";
+  if (!dateString) return "—";
   const date = new Date(dateString);
-  if (isNaN(date.getTime())) return "Không hợp lệ";
+  if (isNaN(date.getTime())) return "—";
   return new Intl.DateTimeFormat("vi-VN", {
     year: "numeric",
     month: "2-digit",

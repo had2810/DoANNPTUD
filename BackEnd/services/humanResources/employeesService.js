@@ -3,7 +3,6 @@ const baseService = require("../baseService");
 const changePasswordService = require("../changePasswordService");
 const EmployeeWorkSchedule = require("../../schemas/repairScheduling/employeeWork.model");
 const Appointment = require("../../schemas/repairScheduling/appointments.model");
-const { comparePassword } = require("../../utils/passwordHash");
 const mongoose = require("mongoose");
 
 const base = baseService(User, { populateFields: ["role"] });
@@ -11,18 +10,25 @@ const base = baseService(User, { populateFields: ["role"] });
 const employeesService = {
   ...base,
 
-  // Tìm employee theo email
+  // 🔍 Tìm nhân viên theo email (role = 2 hoặc 3)
   findByEmail: async (email) => {
     return await User.findOne({
       email,
-      role: 2,
+      role: { $in: [2, 3] }, // ✅ chỉ tìm nhân viên
       isDeleted: { $ne: true },
-    }).select("+password");
+    })
+      .select("+password")
+      .populate("role");
   },
 
-  // Override base methods to filter by role = 2 (Employee)
+  // 📋 Lấy tất cả nhân viên (role = 2 hoặc 3)
   getAll: async (filter = {}) => {
-    return base.getAll({ ...filter, role: 2 });
+    const query = {
+      ...filter,
+      role: { $in: [2, 3] },
+      isDeleted: { $ne: true },
+    };
+    return base.getAll(query);
   },
 
   getById: async (id) => {
@@ -31,7 +37,7 @@ const employeesService = {
 
   update: async (id, data) => {
     const employee = await base.getById(id);
-    if (employee && employee.role !== 2) {
+    if (!employee || ![2, 3].includes(employee.role)) {
       throw new Error("Employee not found");
     }
     return base.update(id, data);
@@ -39,7 +45,7 @@ const employeesService = {
 
   delete: async (id) => {
     const employee = await base.getById(id);
-    if (employee && employee.role !== 2) {
+    if (!employee || ![2, 3].includes(employee.role)) {
       throw new Error("Employee not found");
     }
     return base.delete(id);
@@ -48,10 +54,29 @@ const employeesService = {
   // ➕ Tạo nhân viên mới + khởi tạo lịch trực mặc định
   createEmployee: async (employeeData) => {
     try {
-      employeeData.role = 2; // Set role to Employee
-      // Không cần hashPassword, middleware pre("save") sẽ xử lý
+      // Nếu frontend gửi role thì dùng đúng role đó, nếu không thì mặc định là 2 (kỹ thuật viên)
+      if (
+        typeof employeeData.role === "undefined" ||
+        employeeData.role === ""
+      ) {
+        employeeData.role = 2;
+      }
+      // Đảm bảo role là số nguyên
+      employeeData.role = parseInt(employeeData.role);
+
+      // Tự động sinh fullName nếu chưa có
+      if (
+        !employeeData.fullName &&
+        (employeeData.firstName || employeeData.lastName)
+      ) {
+        employeeData.fullName = `${employeeData.firstName?.trim() || ""} ${
+          employeeData.lastName?.trim() || ""
+        }`.trim();
+      }
+
       const employee = await base.create(employeeData);
 
+      // Tạo lịch trực mặc định
       await EmployeeWorkSchedule.create({
         employeeId: employee._id,
         startTime: new Date(),
@@ -71,17 +96,22 @@ const employeesService = {
   // ✏️ Cập nhật nhân viên
   updateEmployee: async (id, newData) => {
     try {
-      if (newData.firstName && newData.lastName) {
-        newData.fullName = `${newData.firstName.trim()} ${newData.lastName.trim()}`;
+      if (newData.firstName || newData.lastName) {
+        newData.fullName = `${newData.firstName?.trim() || ""} ${
+          newData.lastName?.trim() || ""
+        }`.trim();
       }
-      // Không cần hashPassword, middleware pre("save") sẽ xử lý
+      // Nếu có trường role thì chuyển thành số nguyên
+      if (typeof newData.role !== "undefined" && newData.role !== "") {
+        newData.role = parseInt(newData.role);
+      }
       return await base.update(id, newData);
     } catch (error) {
       throw new Error(`Failed to update employee: ${error.message}`);
     }
   },
 
-  // ❌ Xóa nhân viên + xử lý dữ liệu liên quan
+  // ❌ Xóa nhân viên (soft/hard)
   deleteEmployee: async (id, opts = {}) => {
     try {
       const { hard = false } = opts;
@@ -103,14 +133,14 @@ const employeesService = {
     }
   },
 
-  // 🔐 Đổi mật khẩu
   changePassword: async (id, oldPassword, newPassword) => {
     try {
-      return await changePasswordService(User).changePassword(
+      const result = await changePasswordService(User).changePassword(
         id,
         oldPassword,
         newPassword
       );
+      return result;
     } catch (error) {
       throw new Error(`Failed to change password: ${error.message}`);
     }

@@ -45,6 +45,7 @@ const Login = () => {
 
         if (roleId === 1) navigate("/admin");
         else if (roleId === 2) navigate("/employee");
+         else if (roleId === 3) navigate("/employee");
         else if (roleId === 4) navigate("/user");
         else toast.error("Không xác định được quyền tài khoản!");
       } catch (e) {

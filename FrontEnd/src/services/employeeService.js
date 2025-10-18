@@ -9,9 +9,13 @@ const getAllEmployees = async () => {
 };
 
 const deleteEmployee = async (id) => {
-  const response = await axios.delete(`${API_URL}/employee/${id}`, {
-    withCredentials: true,
-  });
+  const response = await axios.put(
+    `${API_URL}/employee/delete/${id}`,
+    {},
+    {
+      withCredentials: true,
+    }
+  );
   return response.data;
 };
 
@@ -21,9 +25,21 @@ const updateEmployee = async (id, data) => {
   });
   return response.data;
 };
-
+const signupEmployee = async (formData) => {
+  const response = await axios.post(
+    `${API_URL}/auth/register`,
+    {
+      ...formData,
+      userName: formData.email, // 🔥 Gán username = email để tránh trùng null
+      type: formData.type || "employee", // mặc định là employee
+    },
+    { withCredentials: true }
+  );
+  return response.data;
+};
 export default {
   getAllEmployees,
   deleteEmployee,
   updateEmployee,
+  signupEmployee,
 };

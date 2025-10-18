@@ -14,7 +14,7 @@ const router = express.Router();
 router.get("/", authenticate, EmployeeController.getAllEmployees);
 
 // Get Single Employee (Authenticated)
-router.get(":/id", authenticate, EmployeeController.getEmployee);
+router.get("/:id", authenticate, EmployeeController.getEmployee);
 
 // Update Employee (Authenticated)
 router.put("/:id", authenticate, EmployeeController.updateEmployee);

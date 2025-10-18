@@ -14,7 +14,10 @@ const adminService = {
       email,
       role: 1,
       isDeleted: { $ne: true },
-    }).select("+password");
+    })
+      .select("+password")
+      .populate("role");
+    console.log("User with populated role:", user);
   },
 
   // Override base methods to filter by role = 1 (Admin)
@@ -25,7 +28,6 @@ const adminService = {
   getById: async (id) => {
     return await base.getById(id);
   },
-
 
   update: async (id, data) => {
     const admin = await base.getById(id);
@@ -73,11 +75,12 @@ const adminService = {
   // 🔐 Đổi mật khẩu
   changePassword: async (id, oldPassword, newPassword) => {
     try {
-      return await changePasswordService(User).changePassword(
+      const result = await changePasswordService(User).changePassword(
         id,
         oldPassword,
         newPassword
       );
+      return result; // ✅ đảm bảo controller nhận được message từ service
     } catch (error) {
       throw new Error(`Failed to change password: ${error.message}`);
     }

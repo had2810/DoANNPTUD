@@ -23,7 +23,7 @@ const updateService = async (id, service) => {
 };
 
 const deleteService = async (id) => {
-  const response = await axios.delete(`${API_URL}/service/${id}`, {
+  const response = await axios.put(`${API_URL}/service/delete/${id}`, null, {
     withCredentials: true,
   });
   return response.data;

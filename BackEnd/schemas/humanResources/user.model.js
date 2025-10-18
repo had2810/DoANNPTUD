@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema(
     userName: {
       type: String,
       minlength: 6,
-      maxlength: 20,
+      maxlength: 40,
       unique: true,
       sparse: true, // Allows multiple null values
     },
@@ -54,12 +54,11 @@ const userSchema = new mongoose.Schema(
       enum: ["active", "inactive"],
       default: "active",
     },
-    role: { 
-      type: Number, 
-      ref: "Permission", 
+    role: {
+      type: Number,
+      ref: "Permission",
       required: true,
-      enum: [1, 2, 4], // 1: Admin, 2: Employee, 4: User
-      immutable: true 
+      enum: [1, 2, 3, 4], // 1: Admin, 2: Employee, 3: Consultant, 4: User
     },
     isDeleted: { type: Boolean, default: false },
   },
@@ -80,38 +79,47 @@ userSchema.pre("save", async function (next) {
 });
 
 // Static methods for different user types
-userSchema.statics.createAdmin = function(userData) {
+userSchema.statics.createAdmin = function (userData) {
   return this.create({ ...userData, role: 1 });
 };
 
-userSchema.statics.createEmployee = function(userData) {
-  return this.create({ ...userData, role: 2 });
+userSchema.statics.createEmployee = function (userData) {
+  // Nếu truyền role là 3 thì tạo tư vấn viên, còn lại là nhân viên
+  let role = 2;
+  if (userData.role === 3 || userData.role === "3") role = 3;
+  return this.create({ ...userData, role });
 };
 
-userSchema.statics.createUser = function(userData) {
+userSchema.statics.createUser = function (userData) {
   return this.create({ ...userData, role: 4 });
 };
 
 // Instance methods to check user type
-userSchema.methods.isAdmin = function() {
+userSchema.methods.isAdmin = function () {
   return this.role === 1;
 };
 
-userSchema.methods.isEmployee = function() {
+userSchema.methods.isEmployee = function () {
   return this.role === 2;
 };
 
-userSchema.methods.isUser = function() {
+userSchema.methods.isUser = function () {
   return this.role === 4;
 };
 
 // Virtual for user type name
-userSchema.virtual('userType').get(function() {
-  switch(this.role) {
-    case 1: return 'Admin';
-    case 2: return 'Employee';
-    case 4: return 'User';
-    default: return 'Unknown';
+userSchema.virtual("userType").get(function () {
+  switch (this.role) {
+    case 1:
+      return "Admin";
+    case 2:
+      return "Employee";
+    case 3:
+      return "Consultant";
+    case 4:
+      return "User";
+    default:
+      return "Unknown";
   }
 });
 

@@ -29,7 +29,14 @@ const formSchema = z.object({
   deviceType: z.string().min(1, { message: "Vui lòng chọn loại thiết bị" }),
   issueType: z.string().min(1, { message: "Vui lòng chọn loại vấn đề" }),
   deviceTemplateId: z.string().min(1, { message: "Thiếu thông tin thiết bị" }),
-  date: z.date({ required_error: "Vui lòng chọn ngày" }),
+  date: z.date({ required_error: "Vui lòng chọn ngày" }).refine(
+    (d) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return d >= today;
+    },
+    { message: "Không được chọn ngày trong quá khứ" }
+  ),
   time: z.string().min(1, { message: "Vui lòng chọn giờ" }),
   firstName: z.string().min(2, { message: "Vui lòng nhập tên" }),
   lastName: z.string().min(2, { message: "Vui lòng nhập họ" }),
@@ -100,16 +107,51 @@ const Booking = () => {
           "Vui lòng chọn loại thiết bị và vấn đề trước khi tiếp tục.",
         variant: "destructive",
       });
-    } else if (
-      step === "contact" &&
-      (!currentValues.date || !currentValues.time)
-    ) {
-      canProceed = false;
-      toast({
-        title: "Thông tin không đầy đủ",
-        description: "Vui lòng chọn ngày và giờ trước khi tiếp tục.",
-        variant: "destructive",
-      });
+    } else if (step === "contact") {
+      if (!currentValues.date || !currentValues.time) {
+        canProceed = false;
+        toast({
+          title: "Thông tin không đầy đủ",
+          description: "Vui lòng chọn ngày và giờ trước khi tiếp tục.",
+          variant: "destructive",
+        });
+      } else {
+        // Kiểm tra ngày/giờ hợp lệ
+        const year = currentValues.date.getFullYear();
+        const month = currentValues.date.getMonth();
+        const day = currentValues.date.getDate();
+        const [hours, minutes] = currentValues.time.split(":").map(Number);
+        const localDate = new Date(year, month, day, hours, minutes, 0, 0);
+        const now = new Date();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (localDate < today) {
+          canProceed = false;
+          toast({
+            title: "Thời gian không hợp lệ",
+            description: "Không được chọn ngày trong quá khứ.",
+            variant: "destructive",
+          });
+        } else if (
+          localDate.getFullYear() === now.getFullYear() &&
+          localDate.getMonth() === now.getMonth() &&
+          localDate.getDate() === now.getDate()
+        ) {
+          const currentHour = now.getHours();
+          const currentMinute = now.getMinutes();
+          if (
+            hours < currentHour ||
+            (hours === currentHour && minutes <= currentMinute)
+          ) {
+            canProceed = false;
+            toast({
+              title: "Thời gian không hợp lệ",
+              description: "Không được chọn giờ nhỏ hơn hoặc bằng hiện tại.",
+              variant: "destructive",
+            });
+          }
+        }
+      }
     } else if (
       step === "summary" &&
       (!currentValues.firstName ||
@@ -190,6 +232,16 @@ const Booking = () => {
       const day = data.date.getDate();
       const [hours, minutes] = data.time.split(":").map(Number);
       const localDate = new Date(year, month, day, hours, minutes, 0, 0);
+      // Kiểm tra không cho đặt lịch bé hơn hiện tại
+      if (localDate < new Date()) {
+        toast({
+          title: "Thời gian không hợp lệ",
+          description: "Không được chọn ngày giờ trong quá khứ.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
       const appointmentTime = localDate.toISOString();
 
       const appointmentPayload = {

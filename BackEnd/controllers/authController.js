@@ -14,7 +14,9 @@ const authController = {
       let result;
       if (type === "admin") {
         result = await adminService.createAdmin(data);
-      } else if (type === "employee") {
+      } else if (type === "employee" || type === "consultant") {
+        // Nếu là consultant thì truyền role = 3
+        if (type === "consultant") data.role = 3;
         result = await employeeService.createEmployee(data);
       } else {
         result = await userService.createUser(data);
@@ -55,10 +57,8 @@ const authController = {
         sameSite: "lax", // Để "lax" khi dev local, "strict" khi production
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-      let obj = user;
-      if (typeof user.toObject === "function") obj = user.toObject();
-      if (obj.password) delete obj.password;
-      Response(res, 200, true, { message: "Đăng nhập thành công", data: obj });
+      // Không trả về thông tin user, chỉ trả về message
+      Response(res, 200, true, { message: "Đăng nhập thành công" });
     } catch (error) {
       Response(res, 401, false, { message: error.message });
     }
@@ -74,40 +74,6 @@ const authController = {
         message: "Logout failed",
         error: error.message,
       });
-    }
-  },
-  // Lấy thông tin user hiện tại từ token (cookie)
-  getMe: async (req, res) => {
-    try {
-      console.log("[AUTH/ME] req.user:", req.user);
-      if (!req.user) {
-        return Response(res, 401, false, { message: "Chưa đăng nhập" });
-      }
-      let data = null;
-      if (req.user.role === 1) {
-        // Admin
-        data = await adminService.getById(req.user.id);
-      } else if (req.user.role === 2) {
-        // Employee
-        data = await employeeService.getById(req.user.id);
-      } else {
-        // User
-        data = await userService.getById(req.user.id);
-      }
-      console.log("[AUTH/ME] data:", data);
-      if (!data) {
-        return res
-          .status(404)
-          .json({ status: 404, message: "Không tìm thấy user" });
-      }
-      res
-        .status(200)
-        .json({ status: 200, message: "Lấy thông tin thành công", data });
-    } catch (error) {
-      console.error("[AUTH/ME] ERROR:", error);
-      res
-        .status(500)
-        .json({ status: 500, message: error.message, stack: error.stack });
     }
   },
 };

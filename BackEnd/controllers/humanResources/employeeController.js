@@ -33,6 +33,7 @@ const EmployeeController = {
         "address",
         "avatar_url",
         "status",
+        "role", // Cho phép cập nhật role
       ]);
 
       const employee = await employeesService.updateEmployee(

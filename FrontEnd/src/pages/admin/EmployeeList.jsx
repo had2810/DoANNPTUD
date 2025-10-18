@@ -101,8 +101,8 @@ const EmployeeList = () => {
       label: "Chức vụ",
       render: (employee) => {
         const roleMapping = {
-          technician: "Kỹ thuật viên",
-          consultant: "Tư vấn viên",
+          Employee: "Kỹ thuật viên",
+          Consultant: "Tư vấn viên",
         };
         return (
           roleMapping[employee.role?.role] ||

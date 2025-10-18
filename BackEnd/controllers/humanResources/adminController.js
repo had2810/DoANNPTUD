@@ -52,6 +52,7 @@ const adminController = {
   },
 
   // Đổi mật khẩu
+  // Đổi mật khẩu
   changePassword: async (req, res) => {
     try {
       const { oldPassword, newPassword } = req.body;
@@ -59,13 +60,15 @@ const adminController = {
         return res.status(400).json({ message: "Missing passwords" });
       }
 
-      await adminService.changePassword(
-        req.params.id,
+      const result = await adminService.changePassword(
+        req.user.id, // ✅ Dùng id trong token thay vì req.params.id
         oldPassword,
         newPassword
       );
-      res.status(200).json({ message: "Password changed successfully" });
+
+      res.status(200).json(result);
     } catch (error) {
+      console.error("[CHANGE PASSWORD ERROR]", error); // ✅ để debug dễ hơn
       res.status(500).json({ message: error.message });
     }
   },

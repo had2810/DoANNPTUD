@@ -13,6 +13,45 @@ const appointmentsController = {
       });
     }
   },
+  // Lấy danh sách lịch hẹn của user đang đăng nhập (phân trang, tìm kiếm)
+  async getMyAppointments(req, res) {
+    try {
+      const { page = 1, limit = 10, search = "" } = req.query;
+
+      const query = {
+        userId: req.user.id,
+        ...(search && { orderId: { $regex: search, $options: "i" } }),
+      };
+
+      // ✅ Phân trang trên Query (không lỗi .skip)
+      const appointments = await appointmentsService
+        .findMany(query)
+        .skip((page - 1) * limit)
+        .limit(Number(limit))
+        .sort({ createdAt: -1 });
+
+      const total = await appointmentsService.countDocuments(query);
+
+      res.status(200).json({
+        success: true,
+        data: appointments,
+        pagination: {
+          total,
+          page: Number(page),
+          limit: Number(limit),
+          totalPages: Math.ceil(total / limit),
+        },
+      });
+    } catch (error) {
+      console.error("❌ Error in getMyAppointments:", error);
+      res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi lấy danh sách lịch hẹn",
+        error: error.message,
+      });
+    }
+  },
+
   getAppointments: async (req, res) => {
     try {
       const { role, id } = req.user;
