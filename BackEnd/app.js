@@ -15,14 +15,21 @@ var app = express();
 // use JSON/body parsing with larger limit
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
-const allowedOrigins = [process.env.CLIENT_URL || "http://localhost:8080"];
+// ---- CORS SETUP ----
+const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:8080")
+  .split(",")
+  .map((url) => url.trim());
+
+console.log("✅ Allowed origins:", allowedOrigins);
+
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Cho phép cả undefined (cho postman) và các origin hợp lệ
+      // Cho phép Postman (origin = undefined) và các origin hợp lệ
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.error("❌ Blocked by CORS:", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },
@@ -62,8 +69,6 @@ mongoose
     // don't exit here to allow app to load for dev purposes; optional: process.exit(1);
   });
 
-
-  
 mongoose.connection.on("error", (err) => {
   console.error("❌ MongoDB connection lost:", err);
 });
