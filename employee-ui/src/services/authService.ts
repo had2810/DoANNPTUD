@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getAccessToken } from "@/lib/authStorage";
+// ...existing code...
 import type {
   LoginRequest,
   LoginResponse,
@@ -18,10 +18,13 @@ const loginEmployee = async (payload: LoginRequest): Promise<LoginResponse> => {
   return response.data;
 };
 
+// ---- GET ME ----
 const getMe = async (): Promise<ApiResponse<Employee>> => {
   const response = await axios.get<ApiResponse<Employee>>(
     `${API_URL}/auth/me`,
-    { withCredentials: true }
+    {
+      withCredentials: true, // 🔹 gửi cookie thay vì Bearer token
+    }
   );
   return response.data;
 };
