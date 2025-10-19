@@ -27,8 +27,15 @@ const employeeWorkService = {
   async createWeeklySchedule(employeeId, weekStartDate, workDays, status = "Đang trực") {
     const dayjs = require("dayjs");
     
+    console.log("=== CREATE WEEKLY SCHEDULE SERVICE ===");
+    console.log("employeeId:", employeeId);
+    console.log("weekStartDate:", weekStartDate);
+    console.log("workDays:", workDays);
+    console.log("status:", status);
+    
     // Tính ngày kết thúc tuần (Chủ nhật)
     const weekEndDate = dayjs(weekStartDate).add(6, 'day');
+    console.log("weekEndDate:", weekEndDate.format('YYYY-MM-DD'));
     
     // Kiểm tra xem đã có lịch cho tuần này chưa
     const existingSchedule = await EmployeeWorkSchedule.findOne({
@@ -37,20 +44,28 @@ const employeeWorkService = {
       weekEndDate: weekEndDate.toDate(),
     });
 
+    console.log("Existing schedule found:", !!existingSchedule);
+
     if (existingSchedule) {
       // Update lịch hiện có
+      console.log("Updating existing schedule");
       existingSchedule.workDays = workDays;
       existingSchedule.status = status;
-      return await existingSchedule.save();
+      const updatedSchedule = await existingSchedule.save();
+      console.log("Updated schedule:", updatedSchedule);
+      return updatedSchedule;
     } else {
       // Tạo lịch mới
-      return await EmployeeWorkSchedule.create({
+      console.log("Creating new schedule");
+      const newSchedule = await EmployeeWorkSchedule.create({
         employeeId,
         weekStartDate: dayjs(weekStartDate).toDate(),
         weekEndDate: weekEndDate.toDate(),
         workDays,
         status,
       });
+      console.log("Created new schedule:", newSchedule);
+      return newSchedule;
     }
   },
 
@@ -65,7 +80,9 @@ const employeeWorkService = {
     
     const requestedDate = dayjs(weekStartDate);
     
-    console.log("getWeeklySchedule - Looking for week containing:", requestedDate.format('YYYY-MM-DD'));
+    console.log("=== GET WEEKLY SCHEDULE SERVICE ===");
+    console.log("employeeId:", employeeId);
+    console.log("requestedDate:", requestedDate.format('YYYY-MM-DD'));
     
     // Tìm tuần có chứa ngày được yêu cầu
     const schedule = await EmployeeWorkSchedule.findOne({
@@ -87,12 +104,19 @@ const employeeWorkService = {
       },
     ]);
     
-    console.log("getWeeklySchedule - Found schedule:", schedule ? {
-      id: schedule._id,
-      weekStartDate: schedule.weekStartDate,
-      weekEndDate: schedule.weekEndDate,
-      workDays: schedule.workDays
-    } : null);
+    console.log("=== SCHEDULE QUERY RESULT ===");
+    console.log("Schedule found:", !!schedule);
+    if (schedule) {
+      console.log("Schedule details:", {
+        id: schedule._id,
+        weekStartDate: schedule.weekStartDate,
+        weekEndDate: schedule.weekEndDate,
+        workDays: schedule.workDays,
+        workDaysCount: schedule.workDays?.length
+      });
+    } else {
+      console.log("No schedule found for employeeId:", employeeId, "date:", requestedDate.format('YYYY-MM-DD'));
+    }
     
     return schedule;
   },

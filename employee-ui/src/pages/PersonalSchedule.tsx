@@ -49,32 +49,72 @@ const PersonalSchedule = () => {
   const { data: employeeWork } = useQuery({
     queryKey: ["employee-work"],
     queryFn: () => employeeWorkService.getMyEmployeeWorks(),
-    enabled: !!myEmployeeId,
+    enabled: true,
   });
 
   const currentWorkSchedule = employeeWork?.data?.[0];
 
   // 4. Lấy lịch tuần hiện tại (tìm tuần có chứa ngày hôm nay)
-  const { data: currentWeekSchedule } = useQuery({
+  const { data: currentWeekScheduleResponse } = useQuery({
     queryKey: ["weekly-schedule", "current", dayjs().format('YYYY-MM-DD')],
     queryFn: () => {
       const date = dayjs().format('YYYY-MM-DD');
       console.log("PersonalSchedule - calling getWeeklySchedule with date:", date);
       return employeeWorkService.getWeeklySchedule(date);
     },
-    enabled: !!myEmployeeId,
+    enabled: true,
   });
 
   // 5. Lấy lịch tuần tiếp theo (tìm tuần có chứa ngày thứ 2 tuần sau)
-  const { data: nextWeekSchedule } = useQuery({
+  const { data: nextWeekScheduleResponse, isLoading: nextWeekLoading, error: nextWeekError } = useQuery({
     queryKey: ["weekly-schedule", "next", nextWeekStart.format('YYYY-MM-DD')],
-    queryFn: () => {
+    queryFn: async () => {
       const date = nextWeekStart.format('YYYY-MM-DD');
       console.log("PersonalSchedule - calling getWeeklySchedule for next week with date:", date);
-      return employeeWorkService.getWeeklySchedule(date);
+      const response = await employeeWorkService.getWeeklySchedule(date);
+      console.log("PersonalSchedule - API response for next week:", response);
+      return response;
     },
-    enabled: !!myEmployeeId,
+    enabled: true,
   });
+
+  const currentWeekSchedule = currentWeekScheduleResponse?.data;
+  const nextWeekSchedule = nextWeekScheduleResponse?.data;
+
+  // Fallback: nếu API weekly-schedule không có dữ liệu, dò từ danh sách employeeWork
+  const allSchedules = employeeWork?.data ?? [];
+  const fallbackCurrentWeekSchedule = allSchedules.find((s: any) => {
+    const start = dayjs(s.weekStartDate);
+    const end = dayjs(s.weekEndDate);
+    return currentWeekStart.isSameOrAfter(start, 'day') && currentWeekStart.isSameOrBefore(end, 'day');
+  });
+  const fallbackNextWeekSchedule = allSchedules.find((s: any) => {
+    const start = dayjs(s.weekStartDate);
+    const end = dayjs(s.weekEndDate);
+    return nextWeekStart.isSameOrAfter(start, 'day') && nextWeekStart.isSameOrBefore(end, 'day');
+  });
+  const effectiveCurrentWeekSchedule = currentWeekSchedule || fallbackCurrentWeekSchedule;
+  const effectiveNextWeekSchedule = nextWeekSchedule || fallbackNextWeekSchedule;
+  
+  // Debug: Kiểm tra dữ liệu thô từ API và fallback
+  console.log("=== DEBUG API RESPONSES ===");
+  console.log("nextWeekLoading:", nextWeekLoading);
+  console.log("nextWeekError:", nextWeekError);
+  console.log("currentWeekScheduleResponse:", currentWeekScheduleResponse);
+  console.log("nextWeekScheduleResponse:", nextWeekScheduleResponse);
+  console.log("effectiveCurrentWeekSchedule:", effectiveCurrentWeekSchedule);
+  console.log("effectiveNextWeekSchedule:", effectiveNextWeekSchedule);
+  
+  // Kiểm tra xem có dữ liệu workDays không
+  if (effectiveNextWeekSchedule && effectiveNextWeekSchedule.workDays) {
+    console.log("=== NEXT WEEK WORK DAYS ===");
+    console.log("workDays count:", effectiveNextWeekSchedule.workDays.length);
+    console.log("workDays details:", effectiveNextWeekSchedule.workDays);
+  } else {
+    console.log("=== NO WORK DAYS FOUND ===");
+    console.log("effectiveNextWeekSchedule exists:", !!effectiveNextWeekSchedule);
+    console.log("workDays exists:", !!(effectiveNextWeekSchedule && effectiveNextWeekSchedule.workDays));
+  }
 
   // 6. Tạo danh sách ngày trong tuần
   const createWeekDays = (weekStart: dayjs.Dayjs) => {
@@ -82,7 +122,7 @@ const PersonalSchedule = () => {
     for (let i = 0; i < 7; i++) {
       const date = weekStart.add(i, 'day');
       // dayjs: 0=CN, 1=T2, 2=T3, ..., 6=T7
-      // Database: 1=CN, 2=T2, 3=T3, ..., 7=T7
+      // Database: 1=CN, 2=T2, 3=T3, 4=T4, 5=T5, 6=T6, 7=T7
       const dayOfWeek = date.day() === 0 ? 1 : date.day() + 1; // Convert to database format
       days.push({
         date: date.toDate(),
@@ -114,6 +154,30 @@ const PersonalSchedule = () => {
   console.log('Next week schedule:', nextWeekSchedule);
   console.log('Current week schedule workDays:', currentWeekSchedule?.workDays);
   console.log('Next week schedule workDays:', nextWeekSchedule?.workDays);
+  
+  // Debug: Kiểm tra chi tiết dữ liệu
+  if (nextWeekSchedule) {
+    console.log('Next week schedule details:', {
+      weekStartDate: nextWeekSchedule.weekStartDate,
+      weekEndDate: nextWeekSchedule.weekEndDate,
+      workDays: nextWeekSchedule.workDays,
+      workDaysCount: nextWeekSchedule.workDays?.length
+    });
+  } else {
+    console.log('No next week schedule found');
+  }
+  
+  // Debug: Kiểm tra current week schedule
+  if (currentWeekSchedule) {
+    console.log('Current week schedule details:', {
+      weekStartDate: currentWeekSchedule.weekStartDate,
+      weekEndDate: currentWeekSchedule.weekEndDate,
+      workDays: currentWeekSchedule.workDays,
+      workDaysCount: currentWeekSchedule.workDays?.length
+    });
+  } else {
+    console.log('No current week schedule found');
+  }
 
   // 7. Kiểm tra xem có thể sửa lịch tuần hiện tại không (chỉ cho phép sửa ngày tương lai)
   const canEditCurrentWeek = currentWeekSchedule?.workDays?.some((workDay: any) => {
@@ -125,9 +189,25 @@ const PersonalSchedule = () => {
   const renderWorkDays = (weekDays: any[], workSchedule: any, isCurrentWeek: boolean) => {
     return weekDays.map((day) => {
       // Kiểm tra xem ngày này có nằm trong tuần của workSchedule không
+      // Đơn giản hóa logic: chỉ cần so sánh format YYYY-MM-DD để tránh vấn đề timezone
       const isInScheduleWeek = workSchedule && 
-        dayjs(day.date).isSameOrAfter(dayjs(workSchedule.weekStartDate)) &&
-        dayjs(day.date).isSameOrBefore(dayjs(workSchedule.weekEndDate));
+        dayjs(day.date).format('YYYY-MM-DD') >= dayjs(workSchedule.weekStartDate).format('YYYY-MM-DD') &&
+        dayjs(day.date).format('YYYY-MM-DD') <= dayjs(workSchedule.weekEndDate).format('YYYY-MM-DD');
+      
+      // Debug: Kiểm tra chi tiết việc so sánh ngày
+      if (workSchedule) {
+        console.log(`Date comparison for ${day.shortDate}:`, {
+          dayDate: dayjs(day.date).format('YYYY-MM-DD'),
+          scheduleStart: dayjs(workSchedule.weekStartDate).format('YYYY-MM-DD'),
+          scheduleEnd: dayjs(workSchedule.weekEndDate).format('YYYY-MM-DD'),
+          isAfterStart: dayjs(day.date).isSameOrAfter(dayjs(workSchedule.weekStartDate)),
+          isBeforeEnd: dayjs(day.date).isSameOrBefore(dayjs(workSchedule.weekEndDate)),
+          isInScheduleWeek,
+          workDaysInSchedule: workSchedule.workDays?.map((w: any) => ({ dayOfWeek: w.dayOfWeek, startHour: w.startHour, endHour: w.endHour }))
+        });
+      } else {
+        console.log(`No workSchedule for ${day.shortDate}`);
+      }
       
       // Tìm workDay nếu ngày nằm trong tuần của schedule
       const workDay = isInScheduleWeek ? 
@@ -137,10 +217,13 @@ const PersonalSchedule = () => {
       const canEdit = isCurrentWeek && !day.isPast;
 
       console.log(`Day ${day.shortDate} (${day.dayName}):`, {
+        dayOfWeek: day.dayOfWeek,
         isInScheduleWeek,
         workDay,
         isWorking,
-        scheduleWeek: workSchedule ? `${dayjs(workSchedule.weekStartDate).format('DD/MM')} - ${dayjs(workSchedule.weekEndDate).format('DD/MM')}` : 'No schedule'
+        scheduleWeek: workSchedule ? `${dayjs(workSchedule.weekStartDate).format('DD/MM')} - ${dayjs(workSchedule.weekEndDate).format('DD/MM')}` : 'No schedule',
+        workDaysInSchedule: workSchedule?.workDays?.map((w: any) => ({ dayOfWeek: w.dayOfWeek, startHour: w.startHour, endHour: w.endHour })),
+        matchingWorkDay: workSchedule?.workDays?.find((w: any) => w.dayOfWeek === day.dayOfWeek)
       });
 
       return (
@@ -167,7 +250,7 @@ const PersonalSchedule = () => {
               <div className="text-sm font-medium text-green-700">
                 {workDay.startHour} - {workDay.endHour}
               </div>
-              <div className="text-xs text-green-600">Có làm việc</div>
+              <div className="text-xs text-green-600">Đã đăng ký</div>
               {canEdit && (
                 <Button
                   size="sm"
@@ -185,7 +268,7 @@ const PersonalSchedule = () => {
             </div>
           ) : (
             <div className="text-sm text-gray-500">
-              {day.isPast ? 'Đã qua' : 'Nghỉ'}
+              {day.isPast ? 'Đã qua' : isInScheduleWeek ? 'Đã đăng ký làm' : 'Nghỉ'}
             </div>
           )}
         </div>
@@ -193,10 +276,36 @@ const PersonalSchedule = () => {
     });
   };
 
+  // Test function để kiểm tra API
+  const testAPI = async () => {
+    try {
+      console.log("=== TESTING API DIRECTLY ===");
+      const date = nextWeekStart.format('YYYY-MM-DD');
+      console.log("Testing with date:", date);
+      const response = await employeeWorkService.getWeeklySchedule(date);
+      console.log("Direct API response:", response);
+      
+      // Kiểm tra dữ liệu chi tiết
+      if (response && response.data) {
+        console.log("Schedule found:", response.data);
+        console.log("Work days:", response.data.workDays);
+        console.log("Week start:", response.data.weekStartDate);
+        console.log("Week end:", response.data.weekEndDate);
+      } else {
+        console.log("No schedule found in database");
+      }
+    } catch (error) {
+      console.error("API test error:", error);
+    }
+  };
+
   return (
     <div className="p-6 bg-slate-50 h-full space-y-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Lịch làm việc cá nhân</h1>
+        <Button onClick={testAPI} variant="outline" size="sm">
+          Test API
+        </Button>
         </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -225,9 +334,9 @@ const PersonalSchedule = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-3">
-              {renderWorkDays(currentWeekDays, currentWeekSchedule, true)}
+              {renderWorkDays(currentWeekDays, effectiveCurrentWeekSchedule, true)}
               </div>
-            {!currentWeekSchedule && (
+            {!effectiveCurrentWeekSchedule && (
               <div className="text-center py-8 text-gray-500">
                 <CalendarDays className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                 <p>Chưa có lịch làm việc tuần này</p>
@@ -264,9 +373,9 @@ const PersonalSchedule = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-3">
-              {renderWorkDays(nextWeekDays, nextWeekSchedule, false)}
+              {renderWorkDays(nextWeekDays, effectiveNextWeekSchedule, false)}
                 </div>
-            {!nextWeekSchedule && (
+            {!effectiveNextWeekSchedule && (
               <div className="text-center py-8 text-gray-500">
                 <CalendarDays className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                 <p>Chưa có lịch làm việc tuần tiếp theo</p>

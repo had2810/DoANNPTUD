@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import { CalendarDays, Clock, Save, Plus, Trash2 } from "lucide-react";
 
@@ -51,6 +52,7 @@ const WeeklyScheduleRegistration: React.FC = () => {
   const { toast } = useToast();
   const { data: me } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -60,17 +62,38 @@ const WeeklyScheduleRegistration: React.FC = () => {
     },
   });
 
+  // Lấy lịch đã đăng ký cho tuần được chọn
+  const selectedWeekDate = form.watch("weekStartDate");
+  const { data: registeredWeekResponse, isLoading: registeredWeekLoading, error: registeredWeekError } = useQuery({
+    queryKey: ["weekly-schedule", "registered-view", selectedWeekDate],
+    queryFn: () => employeeWorkService.getWeeklySchedule(selectedWeekDate),
+    enabled: !!selectedWeekDate && !!me?.data?._id,
+  });
+  const registeredWeek = registeredWeekResponse?.data;
+
   // Mutation để tạo/cập nhật lịch tuần
   const createWeeklyScheduleMutation = useMutation({
-    mutationFn: (data: CreateWeeklyScheduleRequest) => 
-      employeeWorkService.createWeeklySchedule(data),
-    onSuccess: () => {
+    mutationFn: (data: CreateWeeklyScheduleRequest) => {
+      console.log("=== SUBMITTING WEEKLY SCHEDULE ===");
+      console.log("Data being sent:", data);
+      return employeeWorkService.createWeeklySchedule(data);
+    },
+    onSuccess: (response) => {
+      console.log("=== WEEKLY SCHEDULE CREATED SUCCESSFULLY ===");
+      console.log("Response:", response);
+      
       toast({
         title: "Thành công",
         description: "Đăng ký lịch làm việc tuần thành công!",
       });
       queryClient.invalidateQueries({ queryKey: ["employee-work"] });
       queryClient.invalidateQueries({ queryKey: ["schedule"] });
+      queryClient.invalidateQueries({ queryKey: ["weekly-schedule"] });
+      
+      // Chuyển về trang lịch làm việc để xem kết quả
+      setTimeout(() => {
+        navigate("/personal-calendar");
+      }, 1500);
     },
     onError: (error: any) => {
       toast({
@@ -145,9 +168,10 @@ const WeeklyScheduleRegistration: React.FC = () => {
       return;
     }
 
+    const normalizedWeekStart = dayjs(data.weekStartDate).startOf('week').add(1, 'day').format('YYYY-MM-DD');
     const submitData: CreateWeeklyScheduleRequest = {
       employeeId: me.data._id,
-      weekStartDate: data.weekStartDate,
+      weekStartDate: normalizedWeekStart,
       workDays: data.workDays as WorkDay[],
       status: "Đang trực",
     };
@@ -350,9 +374,33 @@ const WeeklyScheduleRegistration: React.FC = () => {
           <CardTitle>Lịch làm việc đã đăng ký</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-gray-500 py-8">
-            Tính năng xem lịch đã đăng ký sẽ được thêm vào sau
-          </div>
+          {registeredWeekLoading ? (
+            <div className="text-center text-gray-500 py-8">Đang tải lịch đã đăng ký…</div>
+          ) : registeredWeek ? (
+            <div className="space-y-2">
+              <div className="text-sm text-gray-600">
+                Tuần từ {dayjs(registeredWeek.weekStartDate).format('DD/MM/YYYY')} đến {dayjs(registeredWeek.weekEndDate).format('DD/MM/YYYY')}
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {DAYS_OF_WEEK.map((d) => {
+                  const wd = registeredWeek.workDays?.find((w: any) => w.dayOfWeek === d.value);
+                  return (
+                    <div key={d.value} className="p-3 border rounded-md">
+                      <div className="text-sm font-medium">{d.short}</div>
+                      <div className="text-xs text-gray-600">{d.label}</div>
+                      <div className="mt-1 text-sm">
+                        {wd ? `${wd.startHour} - ${wd.endHour}` : 'Nghỉ'}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center text-gray-500 py-8">
+              Chưa có lịch đã đăng ký cho tuần này
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
