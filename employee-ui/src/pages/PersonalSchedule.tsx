@@ -1,7 +1,10 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { CalendarDays } from "lucide-react";
 import ScheduleCalendar from "@/components/calendar/ScheduleCalendar";
 import ScheduleBoard from "@/components/calendar/ScheduleBoard";
+import { Button } from "@/components/ui/button";
 import scheduleService from "@/services/scheduleService";
 import employeeWorkService from "@/services/employeeWorkService";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,6 +14,7 @@ import dayjs from "dayjs";
 const PersonalSchedule = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [displayedMonth, setDisplayedMonth] = useState<Date>(new Date());
+  const navigate = useNavigate();
 
   // 1. Lấy thông tin nhân viên hiện tại
   const { data: me } = useAuth();
@@ -92,7 +96,16 @@ const PersonalSchedule = () => {
 
   return (
     <div className="p-6 bg-slate-50 h-full space-y-6">
-      <h1 className="text-2xl font-bold mb-6">Lịch làm việc cá nhân</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Lịch làm việc cá nhân</h1>
+        <Button
+          onClick={() => navigate("/weekly-schedule")}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          <CalendarDays className="h-4 w-4 mr-2" />
+          Đăng ký lịch tuần
+        </Button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-6">
         <div className="col-span-1">
           <ScheduleCalendar

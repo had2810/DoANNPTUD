@@ -42,6 +42,7 @@ const App = () => (
             <Route path="conversations" element={<EmployeeRouter />} />
             <Route path="calls" element={<EmployeeRouter />} />
             <Route path="personal-calendar" element={<EmployeeRouter />} />
+            <Route path="weekly-schedule" element={<EmployeeRouter />} />
             <Route path="analytics" element={<EmployeeRouter />} />
             <Route path="settings" element={<EmployeeRouter />} />
             <Route path="help" element={<EmployeeRouter />} />

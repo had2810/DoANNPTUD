@@ -37,7 +37,7 @@ router.get("/:id", authenticate, appointmentsController.getAppointmentById);
 router.put(
   "/:id",
   authenticate,
-  authorize("Admin"),
+  authorize("Admin","Employee"),
   appointmentsController.updateAppointment
 );
 

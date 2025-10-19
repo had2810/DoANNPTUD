@@ -5,6 +5,7 @@ import Customers from "@/components/customers/Customers";
 import Calls from "@/components/calls/Calls";
 import Orders from "@/components/orders/Order";
 import PersonalSchedule from "@/pages/PersonalSchedule";
+import WeeklyScheduleRegistration from "@/components/schedule/WeeklyScheduleRegistration";
 
 const EmployeeRouter = () => {
   return (
@@ -15,6 +16,7 @@ const EmployeeRouter = () => {
       <Route path="conversations" element={<Conversations />} />
       <Route path="calls" element={<Calls />} />
       <Route path="personal-calendar" element={<PersonalSchedule />} />
+      <Route path="weekly-schedule" element={<WeeklyScheduleRegistration />} />
       <Route
         path="analytics"
         element={

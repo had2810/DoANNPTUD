@@ -32,4 +32,20 @@ router.put(
   employeeWorkController.deleteEmployeeWork
 );
 
+// Tạo lịch làm việc theo tuần (Employee only)
+router.post(
+  "/weekly",
+  authenticate,
+  authorize("Employee"),
+  employeeWorkController.createWeeklySchedule
+);
+
+// Lấy lịch làm việc theo tuần (Employee only)
+router.get(
+  "/weekly",
+  authenticate,
+  authorize("Employee"),
+  employeeWorkController.getWeeklySchedule
+);
+
 module.exports = router;
