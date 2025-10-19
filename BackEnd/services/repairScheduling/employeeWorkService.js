@@ -54,13 +54,24 @@ const employeeWorkService = {
     }
   },
 
-  // Lấy lịch làm việc theo tuần
+  // Lấy lịch làm việc theo tuần (tìm tuần có chứa ngày được yêu cầu)
   async getWeeklySchedule(employeeId, weekStartDate) {
     const dayjs = require("dayjs");
+    const isSameOrAfter = require("dayjs/plugin/isSameOrAfter");
+    const isSameOrBefore = require("dayjs/plugin/isSameOrBefore");
     
-    return await EmployeeWorkSchedule.findOne({
+    dayjs.extend(isSameOrAfter);
+    dayjs.extend(isSameOrBefore);
+    
+    const requestedDate = dayjs(weekStartDate);
+    
+    console.log("getWeeklySchedule - Looking for week containing:", requestedDate.format('YYYY-MM-DD'));
+    
+    // Tìm tuần có chứa ngày được yêu cầu
+    const schedule = await EmployeeWorkSchedule.findOne({
       employeeId,
-      weekStartDate: dayjs(weekStartDate).toDate(),
+      weekStartDate: { $lte: requestedDate.toDate() },
+      weekEndDate: { $gte: requestedDate.toDate() },
     }).populate([
       {
         path: "employeeId",
@@ -75,6 +86,15 @@ const employeeWorkService = {
         ],
       },
     ]);
+    
+    console.log("getWeeklySchedule - Found schedule:", schedule ? {
+      id: schedule._id,
+      weekStartDate: schedule.weekStartDate,
+      weekEndDate: schedule.weekEndDate,
+      workDays: schedule.workDays
+    } : null);
+    
+    return schedule;
   },
 };
 

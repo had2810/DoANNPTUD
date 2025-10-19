@@ -57,11 +57,13 @@ const createWeeklySchedule = async (weeklyScheduleData) => {
   return response.data;
 };
 
-const getWeeklySchedule = async (employeeId, weekStartDate) => {
+const getWeeklySchedule = async (weekStartDate) => {
+  console.log("getWeeklySchedule service - weekStartDate:", weekStartDate);
   const response = await axios.get(`${API_URL}/employee-work/weekly`, {
-    params: { employeeId, weekStartDate },
+    params: { weekStartDate },
     withCredentials: true,
   });
+  console.log("getWeeklySchedule service - response:", response.data);
   return response.data;
 };
 

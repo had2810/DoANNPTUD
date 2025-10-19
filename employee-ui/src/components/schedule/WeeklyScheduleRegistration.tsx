@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -208,7 +207,7 @@ const WeeklyScheduleRegistration: React.FC = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {DAYS_OF_WEEK.map((day) => (
-                  <div
+                    <div
                     key={day.value}
                     className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${
                       selectedDays.includes(day.value)
@@ -222,10 +221,17 @@ const WeeklyScheduleRegistration: React.FC = () => {
                         <div className="font-medium">{day.short}</div>
                         <div className="text-sm text-gray-600">{day.label}</div>
                       </div>
-                      <Checkbox
-                        checked={selectedDays.includes(day.value)}
-                        disabled
-                      />
+                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                        selectedDays.includes(day.value)
+                          ? 'bg-blue-500 border-blue-500'
+                          : 'border-gray-300'
+                      }`}>
+                        {selectedDays.includes(day.value) && (
+                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

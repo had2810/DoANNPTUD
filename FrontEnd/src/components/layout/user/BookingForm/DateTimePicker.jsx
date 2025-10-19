@@ -67,8 +67,14 @@ const DateTimePicker = ({ control }) => {
       return;
     }
     const dateStr = format(selectedDate, "yyyy-MM-dd");
+    console.log("Fetching available times for date:", dateStr);
     scheduleService.getAvailableTimeByDate(dateStr).then((res) => {
+      console.log("API Response:", res);
+      console.log("Available times:", res.availableTimes);
       setAvailableTimes(res.availableTimes || []);
+    }).catch((error) => {
+      console.error("Error fetching available times:", error);
+      setAvailableTimes([]);
     });
   }, [selectedDate]);
 
@@ -184,6 +190,15 @@ const DateTimePicker = ({ control }) => {
                 {timeSlotsToRender.map((slot) => {
                   const isSelected = field.value === slot.value;
                   const isDisabled = !availableTimes.includes(slot.value);
+                  
+                  // Debug logging
+                  if (slot.value === "09:00") {
+                    console.log("Debug slot 09:00:");
+                    console.log("- slot.value:", slot.value);
+                    console.log("- availableTimes:", availableTimes);
+                    console.log("- isDisabled:", isDisabled);
+                    console.log("- availableTimes.includes(slot.value):", availableTimes.includes(slot.value));
+                  }
 
                   return (
                     <div key={slot.value} className="group relative">

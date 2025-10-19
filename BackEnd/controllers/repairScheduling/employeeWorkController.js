@@ -53,12 +53,34 @@ const employeeWorkController = {
   // Lấy lịch làm việc theo tuần
   getWeeklySchedule: async (req, res) => {
     try {
-      const { employeeId, weekStartDate } = req.query;
+      console.log("getWeeklySchedule controller - START");
+      console.log("getWeeklySchedule controller - req.query:", req.query);
+      console.log("getWeeklySchedule controller - req.user:", req.user);
       
+      const { weekStartDate, employeeId } = req.query; // Vẫn lấy employeeId từ query để debug
+      const employeeIdFromUser = req.user.id; // Lấy từ user đã authenticate
+      
+      console.log("getWeeklySchedule controller - employeeId from query:", employeeId);
+      console.log("getWeeklySchedule controller - employeeId from user:", employeeIdFromUser);
+      console.log("getWeeklySchedule controller - weekStartDate:", weekStartDate);
+      
+      if (!weekStartDate) {
+        return res.status(400).json({ message: "weekStartDate is required" });
+      }
+      
+      if (!employeeIdFromUser) {
+        return res.status(400).json({ message: "employeeId is required" });
+      }
+      
+      console.log("getWeeklySchedule controller - calling service...");
+      
+      // Sử dụng employeeId từ user thay vì từ query
       const schedule = await employeeWorkService.getWeeklySchedule(
-        employeeId,
+        employeeIdFromUser,
         weekStartDate
       );
+      
+      console.log("getWeeklySchedule controller - service returned:", schedule);
       
       res.status(200).json({
         message: "Lấy lịch làm việc theo tuần thành công",
@@ -66,7 +88,8 @@ const employeeWorkController = {
       });
     } catch (error) {
       console.error("Lỗi khi lấy lịch làm việc theo tuần:", error);
-      res.status(500).json({ message: "Lỗi server" });
+      console.error("Error stack:", error.stack);
+      res.status(500).json({ message: "Lỗi server", error: error.message });
     }
   },
 };

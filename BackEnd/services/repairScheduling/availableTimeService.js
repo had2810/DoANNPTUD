@@ -15,14 +15,19 @@ const availableTimeService = {
     
     // Tính tuần của ngày được yêu cầu
     const weekStartDate = date.startOf('week').add(1, 'day').toDate(); // Thứ 2
-    const weekEndDate = date.endOf('week').add(1, 'day').toDate(); // Chủ nhật
+    const weekEndDate = date.startOf('week').add(7, 'day').toDate(); // Chủ nhật
 
-    // Lấy lịch làm việc của tuần chứa ngày đó
+    console.log("Debug getAvailableTimeByDate:");
+    console.log("- Requested date:", dateStr);
+    console.log("- weekStartDate:", weekStartDate);
+    console.log("- weekEndDate:", weekEndDate);
+
+    // Lấy lịch làm việc của tuần chứa ngày đó (chỉ tuần chính xác)
     const shifts = await EmployeeWorkSchedule.find({
       status: "Đang trực",
       excludedDates: { $nin: [startOfDay] },
-      weekStartDate: { $lte: weekEndDate },
-      weekEndDate: { $gte: weekStartDate },
+      weekStartDate: weekStartDate,
+      weekEndDate: weekEndDate,
     })
       .populate({
         path: "employeeId",
@@ -36,6 +41,17 @@ const availableTimeService = {
 
     // Lọc bỏ các ca làm việc không có employeeId (do không match với role == 2)
     const validShifts = shifts.filter((shift) => shift.employeeId);
+
+    console.log("Debug shifts:");
+    console.log("- Total shifts found:", shifts.length);
+    console.log("- Valid shifts:", validShifts.length);
+    console.log("- Shifts data:", shifts.map(s => ({
+      id: s._id,
+      employeeId: s.employeeId,
+      weekStartDate: s.weekStartDate,
+      weekEndDate: s.weekEndDate,
+      workDays: s.workDays
+    })));
 
     // Khung giờ làm việc mặc định mỗi ngày
     const slotList = [];
@@ -89,6 +105,11 @@ const availableTimeService = {
       const busyCount = busySlotMap[slot]?.length || 0;
       return busyCount < validShifts.length;
     });
+
+    console.log("Debug final result:");
+    console.log("- availableTimes:", availableTimes);
+    console.log("- busySlotMap:", busySlotMap);
+    console.log("- validShifts.length:", validShifts.length);
 
     return {
       availableTimes,
@@ -146,7 +167,12 @@ const availableTimeService = {
         // Kiểm tra ngày có nằm trong tuần làm việc không
         const dayOfWeek = currentDate.day() + 1; // Convert to 1-7 format
         const workingDay = shift.workDays.find(w => w.dayOfWeek === dayOfWeek);
-        return !!workingDay;
+        
+        // Kiểm tra ngày có nằm trong tuần cụ thể không
+        const isInWeek = dayjs(startOfDay).isSameOrAfter(dayjs(shift.weekStartDate)) && 
+                        dayjs(startOfDay).isSameOrBefore(dayjs(shift.weekEndDate));
+        
+        return !!workingDay && isInWeek;
       });
 
       const busySlotMap = {};
@@ -254,13 +280,13 @@ const availableTimeService = {
     const weekStartDate = date.startOf('week').add(1, 'day').toDate(); // Thứ 2
     const weekEndDate = date.endOf('week').add(1, 'day').toDate(); // Chủ nhật
 
-    // Tìm lịch làm việc của tuần chứa ngày đó
+    // Tìm lịch làm việc của tuần chứa ngày đó (chỉ tuần chính xác)
     const shift = await EmployeeWorkSchedule.findOne({
       _id: employeeWorkScheduleId,
       status: "Đang trực",
       excludedDates: { $nin: [startOfDay] },
-      weekStartDate: { $lte: weekEndDate },
-      weekEndDate: { $gte: weekStartDate },
+      weekStartDate: weekStartDate,
+      weekEndDate: weekEndDate,
     })
       .populate("employeeId")
       .populate({
