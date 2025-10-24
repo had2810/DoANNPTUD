@@ -12,7 +12,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 
 import Login from "@/pages/user/Login";
 import SignUp from "@/pages/SignUp";
-import ResetPassword from "@/pages/user/ResetPassword";
+import ResetPassword from "@/pages/ResetPassword";
 import NotFound from "@/pages/NotFound";
 
 import { AdminLayout } from "@/components/layout/AdminLayout";

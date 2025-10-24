@@ -43,14 +43,4 @@ const logout = async () => {
   return response.data;
 };
 
-// ---- LOGIN GOOGLE ----
-const loginGoogle = async (token) => {
-  const response = await axios.post(
-    `${API_URL}/auth/loginGoogle`,
-    { token },
-    { withCredentials: true }
-  );
-  return response.data;
-};
-
-export { login, signupUser, getMe, logout, loginGoogle };
+export { login, signupUser, getMe, logout };
