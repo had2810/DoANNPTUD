@@ -3,10 +3,19 @@ const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
 dotenv.config();
 
+// Configure transporter using env vars.
+// For Gmail: host smtp.gmail.com, port 465 (secure=true) or 587 (secure=false).
+// NOTE: Google blocks plain password login for regular accounts. Use an
+// App Password (recommended) or OAuth2. See README notes below.
+const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 465;
+const secure = typeof process.env.SMTP_SECURE !== "undefined"
+  ? process.env.SMTP_SECURE === "true"
+  : port === 465;
+
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: false, // với port 587
+  host: process.env.SMTP_HOST || "smtp.gmail.com",
+  port,
+  secure,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -58,7 +67,7 @@ const templates = {
         </div>
 
         <div style="margin:32px 0;text-align:center">
-          <a href="https://github.com/MT-KS-04" style="${commonStyles.button}">
+          <a href="https://github.com/had2810" style="${commonStyles.button}">
             Khám phá ngay
           </a>
         </div>
@@ -488,7 +497,8 @@ const templates = {
 async function sendMail(to, templateName, ...args) {
   const { subject, html } = templates[templateName](...args);
   const mailOptions = {
-    from: process.env.SMTP_USER,
+    // Allow overriding the From header. If SMTP_FROM not set, use SMTP_USER.
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
     to,
     subject,
     html,

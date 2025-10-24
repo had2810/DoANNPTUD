@@ -55,8 +55,7 @@ const userService = {
       // Không cần hashPassword, middleware pre("save") sẽ xử lý
       const newUser = await base.create(userData);
 
-      // Comment hoặc xóa phần gửi mail để test
-      /*
+      // Gửi mail chào mừng khi tạo user mới
       try {
         if (userData.email) {
           await sendMail(userData.email, "registration", userData.fullName);
@@ -64,7 +63,6 @@ const userService = {
       } catch (err) {
         console.warn("⚠️ Gửi mail thất bại:", err.message);
       }
-      */
 
       return newUser;
     } catch (error) {

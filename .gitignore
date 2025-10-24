@@ -46,3 +46,7 @@ node_modules/
 */node_modules/
 FrontEnd/node_modules/
 employee-ui/node_modules/
+.env
+BackEnd/.env
+FrontEnd/.env
+employee-ui/.env
