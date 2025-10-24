@@ -8,6 +8,8 @@ const router = express.Router();
 router.post("/register", authController.register);
 // Đăng nhập tài khoản (type: user/admin/employee)
 router.post("/login", authController.login);
+// Đăng nhập Google
+router.post("/loginGoogle", authController.loginGoogle);
 // Đăng xuất tài khoản
 router.post("/logout", authController.logout);
 // Lấy thông tin tài khoản hiện tại (dùng cho mọi loại role)
