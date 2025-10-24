@@ -7,15 +7,12 @@ const employeeWorkController = {
   getEmployeeWork: base.getAll,
   getMyEmployeeWork: async (req, res) => {
     try {
-      const { role, id } = req.user;
-      let filter = {};
-
-      if (role === 2 || role === 3) {
-        filter = { employeeId: id };
-      }
+      // Luôn lọc theo ID của user đã xác thực (endpoint này chỉ cho Employee)
+      const { id } = req.user;
+      const filter = { employeeId: id };
 
       console.log(">>> USER INFO:", req.user);
-      console.log(">>> FILTER:", filter);
+      console.log(">>> FILTER (forced employeeId):", filter);
 
       const employeeWork = await employeeWorkService.findMany(filter);
       res.status(200).json({ data: employeeWork });
@@ -66,10 +63,10 @@ const employeeWorkController = {
       console.log("req.query:", req.query);
       console.log("req.user:", req.user);
       
-      const { weekStartDate, employeeId } = req.query; // Vẫn lấy employeeId từ query để debug
-      const employeeIdFromUser = req.user.id; // Lấy từ user đã authenticate
+      const { weekStartDate } = req.query;
+      const { role, id: employeeIdFromUser } = req.user;
       
-      console.log("employeeId from query:", employeeId);
+      console.log("Role:", role);
       console.log("employeeId from user:", employeeIdFromUser);
       console.log("weekStartDate:", weekStartDate);
       
@@ -78,12 +75,16 @@ const employeeWorkController = {
       }
       
       if (!employeeIdFromUser) {
-        return res.status(400).json({ message: "employeeId is required" });
+        return res.status(400).json({ message: "User not authenticated" });
+      }
+
+      // Chỉ cho phép nhân viên xem lịch của chính họ
+      if (role !== 2 && role !== 3) {
+        return res.status(403).json({ message: "Không có quyền truy cập lịch làm việc" });
       }
       
       console.log("Calling service with employeeId:", employeeIdFromUser, "weekStartDate:", weekStartDate);
       
-      // Sử dụng employeeId từ user thay vì từ query
       const schedule = await employeeWorkService.getWeeklySchedule(
         employeeIdFromUser,
         weekStartDate
