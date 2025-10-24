@@ -5,15 +5,15 @@ const userSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
-      required: true,
+      required: false,
     },
     lastName: {
       type: String,
-      required: true,
+      required: false,
     },
     fullName: {
       type: String,
-      required: true,
+      required: false,
     },
     userName: {
       type: String,
@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: false,
       minlength: 8,
       select: false,
     },
@@ -37,11 +37,12 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: {
       type: String,
-      required: true,
-      unique: true,
+      required: false,
       minlength: 10,
       maxlength: 15,
       match: /^0[1-9]{1}[0-9]{8}$/,
+      unique: true,
+     sparse: true, // Thêm dòng này
     },
     address: {
       type: String,

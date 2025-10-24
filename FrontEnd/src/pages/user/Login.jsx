@@ -8,12 +8,13 @@ import Footer from "@/components/layout/user/Footer";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useState } from "react";
-import { login, getMe } from "@/services/authService";
+import { login, getMe, loginGoogle } from "@/services/authService";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { GoogleLogin } from "@react-oauth/google";
 
 const loginSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
@@ -45,7 +46,7 @@ const Login = () => {
 
         if (roleId === 1) navigate("/admin");
         else if (roleId === 2) navigate("/employee");
-         else if (roleId === 3) navigate("/employee");
+        else if (roleId === 3) navigate("/employee");
         else if (roleId === 4) navigate("/user");
         else toast.error("Không xác định được quyền tài khoản!");
       } catch (e) {
@@ -61,6 +62,23 @@ const Login = () => {
 
   const handleSubmit = (data) => {
     mutate();
+  };
+
+  const handleGoogleLogin = async (credentialResponse) => {
+    try {
+      const res = await loginGoogle(credentialResponse.credential);
+      toast.success("Đăng nhập Google thành công!");
+      const me = await getMe();
+      const role = me?.data?.role;
+      const roleId = typeof role === "object" ? role?._id : role;
+      if (roleId === 1) navigate("/admin");
+      else if (roleId === 2) navigate("/employee");
+      else if (roleId === 3) navigate("/employee");
+      else if (roleId === 4) navigate("/user");
+      else toast.error("Không xác định được quyền tài khoản!");
+    } catch (e) {
+      toast.error("Đăng nhập Google thất bại!");
+    }
   };
 
   return (
@@ -154,6 +172,14 @@ const Login = () => {
               >
                 {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
               </Button>
+
+              <div className="mt-4 flex flex-col gap-2">
+                <GoogleLogin
+                  onSuccess={handleGoogleLogin}
+                  onError={() => toast.error("Đăng nhập Google thất bại!")}
+                  width="100%"
+                />
+              </div>
 
               <div className="text-center mt-4">
                 <span className="text-gray-600">Chưa có tài khoản? </span>

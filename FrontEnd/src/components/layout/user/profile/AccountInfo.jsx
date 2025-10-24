@@ -40,39 +40,44 @@ const AccountInfo = () => {
               <Avatar className="h-40 w-40 mb-4">
                 <AvatarImage
                   src={userInfo.avatar_url || null}
-                  alt={userInfo.fullName}
+                  alt={userInfo.fullName || userInfo.userName || ""}
                   className="object-cover"
                 />
                 <AvatarFallback className="text-2xl">
-                  {userInfo.lastName.charAt(0) ?? "U"}
+                  {(userInfo.lastName && userInfo.lastName.charAt(0)) ||
+                    (userInfo.userName && userInfo.userName.charAt(0)) ||
+                    "U"}
                 </AvatarFallback>
               </Avatar>
-              <h2 className="text-2xl font-bold">{userInfo.userName}</h2>
-              <p className="text-gray-500 mb-4">{userInfo.fullName}</p>
+              <h2 className="text-2xl font-bold">
+                {userInfo.userName || "Chưa có username"}
+              </h2>
+              <p className="text-gray-500 mb-4">{userInfo.fullName || ""}</p>
 
               <div className="w-full space-y-4 mt-2">
                 <div className="flex items-center gap-3">
                   <Mail className="text-blue-500" size={18} />
                   <span className="text-sm text-gray-700">
-                    {userInfo.email}
+                    {userInfo.email || ""}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Phone className="text-blue-500" size={18} />
                   <span className="text-sm text-gray-700">
-                    {userInfo.phoneNumber}
+                    {userInfo.phoneNumber || ""}
                   </span>
                 </div>
                 <div className="flex items-start gap-3">
                   <MapPin className="text-blue-500 mt-1" size={18} />
                   <span className="text-sm text-gray-700">
-                    {userInfo.address}
+                    {userInfo.address || ""}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <CalendarDays className="text-blue-500" size={18} />
                   <span className="text-sm text-gray-700">
-                    Tham gia: {formatDate(userInfo.createdAt)}
+                    Tham gia:{" "}
+                    {userInfo.createdAt ? formatDate(userInfo.createdAt) : ""}
                   </span>
                 </div>
               </div>
@@ -116,7 +121,7 @@ const AccountInfo = () => {
                   <UserIcon className="text-blue-500" size={18} />
                   <div>
                     <h3 className="text-sm text-gray-500 mb-1">Họ và tên</h3>
-                    <p className="font-medium">{userInfo.fullName}</p>
+                    <p className="font-medium">{userInfo.fullName || ""}</p>
                   </div>
                 </div>
 
@@ -127,7 +132,7 @@ const AccountInfo = () => {
                     <h3 className="text-sm text-gray-500 mb-1">
                       Số điện thoại
                     </h3>
-                    <p className="font-medium">{userInfo.phoneNumber}</p>
+                    <p className="font-medium">{userInfo.phoneNumber || ""}</p>
                   </div>
                 </div>
 
@@ -136,7 +141,7 @@ const AccountInfo = () => {
                   <Mail className="text-blue-500" size={18} />
                   <div>
                     <h3 className="text-sm text-gray-500 mb-1">Email</h3>
-                    <p className="font-medium">{userInfo.email}</p>
+                    <p className="font-medium">{userInfo.email || ""}</p>
                   </div>
                 </div>
 
@@ -148,7 +153,7 @@ const AccountInfo = () => {
                       Ngày tạo tài khoản
                     </h3>
                     <p className="font-medium">
-                      {formatDateTimeFull(userInfo.createdAt)}
+                      {userInfo.createdAt ? formatDateTimeFull(userInfo.createdAt) : ""}
                     </p>
                   </div>
                 </div>
@@ -158,7 +163,7 @@ const AccountInfo = () => {
                   <MapPin className="text-blue-500 mt-1" size={18} />
                   <div>
                     <h3 className="text-sm text-gray-500 mb-1">Địa chỉ</h3>
-                    <p className="font-medium">{userInfo.address}</p>
+                    <p className="font-medium">{userInfo.address || ""}</p>
                   </div>
                 </div>
               </div>
