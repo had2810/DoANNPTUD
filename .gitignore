@@ -40,7 +40,7 @@
 # debug information files
 *.dwo
 # Environment variables
-.env
+**/.env
 # Ignore all node_modules in project
 node_modules/
 */node_modules/
