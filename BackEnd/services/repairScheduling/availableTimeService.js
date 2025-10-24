@@ -252,41 +252,43 @@ const availableTimeService = {
   },
 
   async getAnAvailableTime(employeeWorkScheduleId, dateStr) {
-    console.log("Input ID:", employeeWorkScheduleId);
-    console.log("Input date:", dateStr);
+    console.log("[getAnAvailableTime] Start");
+    console.log("[getAnAvailableTime] Input:", { employeeWorkScheduleId, dateStr });
 
     const date = dayjs(dateStr);
     const startOfDay = date.startOf("day").toDate();
-
-    // Debug: Kiểm tra tất cả documents
-    const allShifts = await EmployeeWorkSchedule.find({});
-    console.log("Total shifts:", allShifts.length);
-    console.log(
-      "All IDs:",
-      allShifts.map((s) => s._id.toString())
-    );
+    
+    console.log("[getAnAvailableTime] Processing date:", date.format("YYYY-MM-DD"));
 
     // Debug: Kiểm tra document có tồn tại không
-    const shiftExists = await EmployeeWorkSchedule.findById(
-      employeeWorkScheduleId
-    );
-    console.log("Document exists:", !!shiftExists);
+    const shiftExists = await EmployeeWorkSchedule.findById(employeeWorkScheduleId);
+    console.log("[getAnAvailableTime] Document exists:", !!shiftExists);
+    
     if (shiftExists) {
-      console.log("Status:", shiftExists.status);
-      console.log("ExcludedDates:", shiftExists.excludedDates);
+      console.log("[getAnAvailableTime] Found shift details:", {
+        status: shiftExists.status,
+        excludedDates: shiftExists.excludedDates?.map(d => dayjs(d).format("YYYY-MM-DD")),
+        weekStartDate: dayjs(shiftExists.weekStartDate).format("YYYY-MM-DD"),
+        weekEndDate: dayjs(shiftExists.weekEndDate).format("YYYY-MM-DD")
+      });
     }
 
-    // Tính tuần của ngày được yêu cầu
-    const weekStartDate = date.startOf('week').add(1, 'day').toDate(); // Thứ 2
-    const weekEndDate = date.endOf('week').add(1, 'day').toDate(); // Chủ nhật
+    // Tính tuần của ngày được yêu cầu (không cộng thêm ngày)
+    const weekStartDate = date.startOf('week').toDate(); 
+    const weekEndDate = date.endOf('week').toDate();
 
-    // Tìm lịch làm việc của tuần chứa ngày đó (chỉ tuần chính xác)
+    console.log("[getAnAvailableTime] Week range:", {
+      weekStartDate: dayjs(weekStartDate).format("YYYY-MM-DD"),
+      weekEndDate: dayjs(weekEndDate).format("YYYY-MM-DD")
+    });
+
+    // Tìm lịch làm việc của tuần chứa ngày đó
     const shift = await EmployeeWorkSchedule.findOne({
       _id: employeeWorkScheduleId,
       status: "Đang trực",
       excludedDates: { $nin: [startOfDay] },
-      weekStartDate: weekStartDate,
-      weekEndDate: weekEndDate,
+      weekStartDate: { $lte: weekEndDate },
+      weekEndDate: { $gte: weekStartDate }
     })
       .populate("employeeId")
       .populate({
@@ -295,6 +297,7 @@ const availableTimeService = {
       });
 
     if (!shift) {
+      console.log("[getAnAvailableTime] No active shift found for the week");
       return {
         availableTimes: [],
         shift: null,
@@ -304,7 +307,19 @@ const availableTimeService = {
 
     // Kiểm tra ngày có làm việc không
     const dayOfWeek = date.day() + 1; // Convert to 1-7 format
+    console.log("[getAnAvailableTime] Checking workday:", { dayOfWeek, workDays: shift.workDays });
+    
+    if (!Array.isArray(shift.workDays)) {
+      console.log("[getAnAvailableTime] Invalid workDays format");
+      return {
+        availableTimes: [],
+        shift: null,
+        message: "Lịch làm việc không hợp lệ",
+      };
+    }
+
     const workingDay = shift.workDays.find(w => w.dayOfWeek === dayOfWeek);
+    console.log("[getAnAvailableTime] Found working day:", workingDay);
     
     if (!workingDay) {
       return {
@@ -325,41 +340,74 @@ const availableTimeService = {
     const shiftEnd = new Date(`${dateStr}T${workingDay.endHour || "17:00"}:00`);
 
     for (const slot of slotList) {
-      const slotTime = new Date(`${dateStr}T${slot}:00`);
+      const slotTime = dayjs(`${dateStr}T${slot}:00`);
+      console.log("[getAnAvailableTime] Checking slot:", {
+        slot,
+        slotTime: slotTime.format("YYYY-MM-DD HH:mm")
+      });
 
       // Kiểm tra slot có trong ca làm việc không
-      if (slotTime < shiftStart || slotTime >= shiftEnd) {
+      if (slotTime.isBefore(dayjs(shiftStart)) || slotTime.isSameOrAfter(dayjs(shiftEnd))) {
+        console.log("[getAnAvailableTime] Slot outside shift hours");
         continue;
       }
 
       // Kiểm tra slot có appointment không
       const isBusy = (shift.appointmentId || []).some((appt) => {
+        if (!appt || !appt.appointmentTime) return false;
+        
         const bufferTime = 15;
-        const apptStart = appt.appointmentTime;
+        const apptStart = dayjs(appt.appointmentTime);
         const duration = (appt.serviceId?.estimatedDuration || 60) + bufferTime;
-        const apptEnd = new Date(apptStart.getTime() + duration * 60000);
-        return slotTime >= apptStart && slotTime < apptEnd;
+        const apptEnd = apptStart.add(duration, 'minutes');
+
+        const isConflict = slotTime.isSameOrAfter(apptStart) && slotTime.isBefore(apptEnd);
+        
+        if (isConflict) {
+          console.log("[getAnAvailableTime] Found conflicting appointment:", {
+            slot: slot,
+            appointmentTime: apptStart.format("YYYY-MM-DD HH:mm"),
+            duration: duration,
+            endTime: apptEnd.format("YYYY-MM-DD HH:mm")
+          });
+        }
+        
+        return isConflict;
       });
 
       if (isBusy) {
+        console.log("[getAnAvailableTime] Slot is busy:", slot);
         busySlots.push(slot);
       }
     }
 
     // Lọc ra các slot rảnh
     const availableTimes = slotList.filter((slot) => {
-      const slotTime = new Date(`${dateStr}T${slot}:00`);
-      return (
-        slotTime >= shiftStart &&
-        slotTime < shiftEnd &&
-        !busySlots.includes(slot)
-      );
+      const slotTime = dayjs(`${dateStr}T${slot}:00`);
+      const isAvailable = slotTime.isSameOrAfter(dayjs(shiftStart)) &&
+                         slotTime.isBefore(dayjs(shiftEnd)) &&
+                         !busySlots.includes(slot);
+                         
+      console.log("[getAnAvailableTime] Slot availability:", {
+        slot,
+        isInShiftHours: slotTime.isSameOrAfter(dayjs(shiftStart)) && slotTime.isBefore(dayjs(shiftEnd)),
+        isNotBusy: !busySlots.includes(slot),
+        isAvailable
+      });
+      
+      return isAvailable;
     });
 
     // Lấy tất cả lịch hẹn trong ngày
     const appointmentToday = (shift.appointmentId || []).filter((appt) => {
-      const apptDate = dayjs(appt.appointmentTime).format("YYYY-MM-DD");
-      return apptDate === dateStr;
+      if (!appt || !appt.appointmentTime) return false;
+      return dayjs(appt.appointmentTime).format("YYYY-MM-DD") === dateStr;
+    });
+
+    console.log("[getAnAvailableTime] Result:", {
+      availableTimesCount: availableTimes.length,
+      busySlotsCount: busySlots.length,
+      appointmentTodayCount: appointmentToday.length
     });
 
     return {

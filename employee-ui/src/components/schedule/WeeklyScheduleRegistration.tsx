@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import dayjs from "dayjs";
 import { CalendarDays, Clock, Save, Plus, Trash2 } from "lucide-react";
 
@@ -54,10 +54,23 @@ const WeeklyScheduleRegistration: React.FC = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  // Get initial weekStartDate from navigation state or use current Monday
+  const location = useLocation();
+  const initialWeekStartDate = useMemo(() => {
+    const stateDate = location.state?.weekStartDate;
+    if (stateDate) {
+      // If a date was passed, ensure it's a Monday
+      const date = dayjs(stateDate);
+      return date.day() === 1 ? date : date.startOf('week').add(1, 'day');
+    }
+    // Default to current week's Monday
+    return dayjs().startOf('week').add(1, 'day');
+  }, [location.state?.weekStartDate]);
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      weekStartDate: dayjs().startOf('week').add(1, 'day').format('YYYY-MM-DD'), // Thứ 2 của tuần hiện tại
+      weekStartDate: initialWeekStartDate.format('YYYY-MM-DD'),
       workDays: [],
     },
   });
@@ -202,12 +215,30 @@ const WeeklyScheduleRegistration: React.FC = () => {
                 name="weekStartDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Ngày bắt đầu tuần (Thứ 2)</FormLabel>
+                    <FormLabel>Ngày bắt đầu tuần (chỉ chọn thứ 2)</FormLabel>
                     <FormControl>
                       <Input
                         type="date"
                         {...field}
                         min={dayjs().format('YYYY-MM-DD')}
+                        onChange={(e) => {
+                          // Ensure the selected date is a Monday
+                          const selectedDate = dayjs(e.target.value);
+                          const dayOfWeek = selectedDate.day(); // 0 = Sunday, 1 = Monday, ...
+                          if (dayOfWeek !== 1) {
+                            // Find the next Monday
+                            const nextMonday = selectedDate.add(
+                              dayOfWeek === 0 ? 1 : 8 - dayOfWeek, 
+                              'day'
+                            );
+                            field.onChange(nextMonday.format('YYYY-MM-DD'));
+                            toast({
+                              description: "Đã tự động chọn thứ 2 gần nhất",
+                            });
+                          } else {
+                            field.onChange(e.target.value);
+                          }
+                        }}
                       />
                     </FormControl>
                     <FormMessage />

@@ -251,20 +251,7 @@ const PersonalSchedule = () => {
                 {workDay.startHour} - {workDay.endHour}
               </div>
               <div className="text-xs text-green-600">Đã đăng ký</div>
-              {canEdit && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="w-full mt-2 text-xs"
-                  onClick={() => {
-                    // TODO: Implement edit functionality
-                    console.log('Edit work day:', workDay);
-                  }}
-                >
-                  <Edit className="h-3 w-3 mr-1" />
-                  Sửa
-                </Button>
-              )}
+              
             </div>
           ) : (
             <div className="text-sm text-gray-500">
@@ -302,10 +289,16 @@ const PersonalSchedule = () => {
   return (
     <div className="p-6 bg-slate-50 h-full space-y-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Lịch làm việc cá nhân</h1>
-        <Button onClick={testAPI} variant="outline" size="sm">
-          Test API
-        </Button>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold">Lịch làm việc cá nhân</h1>
+          <Button
+            onClick={() => navigate("/weekly-schedule")}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Đăng ký lịch
+          </Button>
+        </div>
         </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -317,19 +310,18 @@ const PersonalSchedule = () => {
                 <CalendarDays className="h-5 w-5" />
                 Tuần này ({currentWeekStart.format('DD/MM')} - {currentWeekEnd.format('DD/MM')})
               </CardTitle>
-              {canEditCurrentWeek && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    // TODO: Implement edit current week functionality
-                    console.log('Edit current week');
-                  }}
-                >
-                  <Edit className="h-4 w-4 mr-1" />
-                  Sửa
-                </Button>
-              )}
+              <Button
+                size="sm"
+                onClick={() => {
+                  navigate("/weekly-schedule", { 
+                    state: { weekStartDate: currentWeekStart.format('YYYY-MM-DD') } 
+                  });
+                }}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Đăng ký lịch
+              </Button>
                 </div>
           </CardHeader>
           <CardContent>
@@ -363,7 +355,9 @@ const PersonalSchedule = () => {
               </CardTitle>
               <Button
                 size="sm"
-                onClick={() => navigate("/weekly-schedule")}
+                onClick={() => navigate("/weekly-schedule", { 
+                  state: { weekStartDate: nextWeekStart.format('YYYY-MM-DD') } 
+                })}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 <Plus className="h-4 w-4 mr-1" />

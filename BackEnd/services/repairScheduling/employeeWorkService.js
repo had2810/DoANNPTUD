@@ -84,12 +84,18 @@ const employeeWorkService = {
     console.log("employeeId:", employeeId);
     console.log("requestedDate:", requestedDate.format('YYYY-MM-DD'));
     
-    // Tìm tuần có chứa ngày được yêu cầu
-    const schedule = await EmployeeWorkSchedule.findOne({
-      employeeId,
-      weekStartDate: { $lte: requestedDate.toDate() },
-      weekEndDate: { $gte: requestedDate.toDate() },
-    }).populate([
+        // Convert employeeId to ObjectId if it's a string
+        const employeeObjectId = typeof employeeId === 'string' ? mongoose.Types.ObjectId(employeeId) : employeeId;
+    
+        // Tìm chính xác lịch làm việc của nhân viên trong tuần
+        const schedule = await EmployeeWorkSchedule.findOne({
+          employeeId: employeeObjectId,
+          weekStartDate: {
+            $gte: requestedDate.startOf('week').toDate(),
+            $lte: requestedDate.startOf('week').endOf('day').toDate()
+          },
+          isDeleted: false
+        }).populate([
       {
         path: "employeeId",
         select: "-password -refreshToken",

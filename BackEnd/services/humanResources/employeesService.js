@@ -75,18 +75,6 @@ const employeesService = {
       }
 
       const employee = await base.create(employeeData);
-
-      // Tạo lịch trực mặc định
-      await EmployeeWorkSchedule.create({
-        employeeId: employee._id,
-        startTime: new Date(),
-        endTime: new Date(),
-        startHour: "08:00",
-        endHour: "17:00",
-        status: "Đang trực",
-        note: "Chào mừng bạn đã đến với công ty",
-      });
-
       return employee;
     } catch (error) {
       throw new Error(`Failed to create employee: ${error.message}`);
