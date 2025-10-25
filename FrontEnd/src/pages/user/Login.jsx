@@ -116,7 +116,7 @@ const Login = () => {
                 <div className="flex justify-between items-center">
                   <Label htmlFor="password">Mật khẩu</Label>
                   <Link
-                    to="/forgot-password"
+                    to="/reset-password"
                     className="text-sm text-techmate-purple hover:underline"
                   >
                     Quên mật khẩu?

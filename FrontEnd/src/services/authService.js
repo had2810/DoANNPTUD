@@ -54,3 +54,24 @@ const loginGoogle = async (token) => {
 };
 
 export { login, signupUser, getMe, logout, loginGoogle };
+
+// ---- FORGOT / RESET PASSWORD ----
+const forgotPassword = async (email) => {
+  const response = await axios.post(
+    `${API_URL}/auth/forgotpassword`,
+    { email },
+    { withCredentials: true }
+  );
+  return response.data;
+};
+
+const resetPassword = async (token, newPassword) => {
+  const response = await axios.post(
+    `${API_URL}/auth/resetpassword/${token}`,
+    { newPassword },
+    { withCredentials: true }
+  );
+  return response.data;
+};
+
+export { forgotPassword, resetPassword };

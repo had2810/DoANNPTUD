@@ -62,6 +62,9 @@ const userSchema = new mongoose.Schema(
       enum: [1, 2, 3, 4], // 1: Admin, 2: Employee, 3: Consultant, 4: User
     },
     isDeleted: { type: Boolean, default: false },
+    // Forgot password token and expiry
+    forgotPasswordToken: { type: String, default: "" },
+    forgotPasswordTokenExp: { type: Date, default: null },
   },
   { timestamps: true }
 );

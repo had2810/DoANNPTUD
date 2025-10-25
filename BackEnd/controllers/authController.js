@@ -123,6 +123,71 @@ Response(res, 200, true, { message: "Đăng nhập Google thành công" });
       });
     }
   },
+
+  // Quên mật khẩu (gửi link đặt lại)
+  forgotPassword: async (req, res) => {
+    try {
+      const { email } = req.body;
+      const userService = require("../services/humanResources/userService");
+      let user = await userService.findByEmail(email);
+      if (!user) return Response(res, 404, false, "Email không tồn tại");
+
+      // Generate token
+      const crypto = require("crypto");
+      const token = crypto.randomBytes(32).toString("hex");
+      // Set expiry to 60 minutes
+      user.forgotPasswordToken = token;
+      user.forgotPasswordTokenExp = new Date(Date.now() + 60 * 60 * 1000);
+      await user.save();
+
+      const frontendUrl = process.env.CLIENT_URL?.split(",")[0] || "http://localhost:3000";
+  // Frontend route for reset page is /reset-password/:token
+  const resetUrl = `${frontendUrl.replace(/\/$/,"")}/reset-password/${token}`;
+
+      // Send email
+      const { sendMail } = require("../services/emailService");
+      try {
+        await sendMail(user.email, "forgotPassword", user.fullName || user.userName || "Người dùng", resetUrl);
+      } catch (err) {
+        console.warn("Gửi mail forgot password thất bại:", err.message);
+      }
+
+      return Response(res, 200, true, { message: "Đã gửi link đặt lại mật khẩu", resetUrl });
+    } catch (error) {
+      console.error("[AUTH] forgotPassword error:", error);
+      return Response(res, 500, false, { message: error.message });
+    }
+  },
+
+  // Reset mật khẩu bằng token
+  resetPassword: async (req, res) => {
+    try {
+      const { token } = req.params;
+      const { newPassword } = req.body;
+      const userService = require("../services/humanResources/userService");
+      // find user by token
+      const User = require("../schemas/humanResources/user.model");
+      let user = await User.findOne({ forgotPasswordToken: token, isDeleted: { $ne: true } }).select("+password");
+      if (!user) return Response(res, 404, false, "Token không tồn tại");
+      if (!user.forgotPasswordTokenExp || user.forgotPasswordTokenExp < Date.now()) {
+        user.forgotPasswordToken = "";
+        user.forgotPasswordTokenExp = null;
+        await user.save();
+        return Response(res, 400, false, "Token đã hết hạn");
+      }
+
+      // Set new password (pre-save hook will hash)
+      user.password = newPassword;
+      user.forgotPasswordToken = "";
+      user.forgotPasswordTokenExp = null;
+      await user.save();
+
+      return Response(res, 200, true, "Đổi mật khẩu thành công");
+    } catch (error) {
+      console.error("[AUTH] resetPassword error:", error);
+      return Response(res, 500, false, { message: error.message });
+    }
+  },
 };
 
 module.exports = authController;

@@ -12,6 +12,11 @@ router.post("/login", authController.login);
 router.post("/loginGoogle", authController.loginGoogle);
 // Đăng xuất tài khoản
 router.post("/logout", authController.logout);
+// Quên mật khẩu: gửi link đặt lại
+const { validatorForgotPassword, validatedResult, validatorUserChangePassword } = require("../utils/validator");
+router.post("/forgotpassword", validatorForgotPassword, validatedResult, authController.forgotPassword);
+// Reset mật khẩu bằng token
+router.post("/resetpassword/:token", validatorUserChangePassword.slice(1), validatedResult, authController.resetPassword);
 // Lấy thông tin tài khoản hiện tại (dùng cho mọi loại role)
 const User = require("../schemas/humanResources/user.model");
 router.get("/me", authenticate, async (req, res) => {

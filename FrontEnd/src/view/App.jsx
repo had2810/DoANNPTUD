@@ -12,7 +12,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 
 import Login from "@/pages/user/Login";
 import SignUp from "@/pages/SignUp";
-import ResetPassword from "@/pages/ResetPassword";
+import ResetPassword from "@/pages/user/ResetPassword";
 import NotFound from "@/pages/NotFound";
 
 import { AdminLayout } from "@/components/layout/AdminLayout";
@@ -43,6 +43,7 @@ const App = () => (
           <Route path="/" element={<Navigate to="/user" replace />} />
           <Route path="/login" element={<Login />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
 
           {/* Admin Routes */}
           <Route
