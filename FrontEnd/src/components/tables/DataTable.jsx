@@ -177,10 +177,8 @@ const DataTable = ({
               ) : data.length > 0 ? (
                 data.map((item, index) => (
                   <TableRow
-                    key={item.id}
-                    className={`${
-                      rowClassName ? rowClassName(item) : ""
-                    } hover:bg-gray-50`}
+                    key={item._id || item.id || index}
+                    className={`${rowClassName ? rowClassName(item) : ""} hover:bg-gray-50`}
                   >
                     <TableCell className="font-medium text-center">
                       {(currentPage - 1) * 10 + index + 1}
@@ -222,20 +220,24 @@ const DataTable = ({
                             <Eye className="h-4 w-4 text-blue-500" />
                           </Button>
                         )}
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => onEdit(item)}
-                        >
-                          <Edit className="h-4 w-4 text-blue-500" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => onDelete(item)}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
+                        {onEdit && (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => onEdit(item)}
+                          >
+                            <Edit className="h-4 w-4 text-blue-500" />
+                          </Button>
+                        )}
+                        {onDelete && (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => onDelete(item)}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
