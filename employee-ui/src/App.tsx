@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import RequireEmployee from "./components/RequireEmployee";
 import Login from "./pages/Login";
 import UnresolvedOrders from "./components/orders/UnresolvedOrders";
+import RepairStatusPage from "./components/orders/RepairStatusPage";
 import EmployeeRouter from "@/routers/EmployeeRouter";
 
 const queryClient = new QueryClient();
@@ -43,12 +44,14 @@ const App = () => (
             <Route path="calls" element={<EmployeeRouter />} />
             <Route path="personal-calendar" element={<EmployeeRouter />} />
             <Route path="weekly-schedule" element={<EmployeeRouter />} />
+            <Route path="repair-status" element={<EmployeeRouter />} />
             <Route path="analytics" element={<EmployeeRouter />} />
             <Route path="settings" element={<EmployeeRouter />} />
             <Route path="help" element={<EmployeeRouter />} />
             <Route index element={<Navigate to="dashboard" replace />} />
           </Route>
           <Route path="/orders/:orderId" element={<UnresolvedOrders />} />
+          <Route path="/orders/:orderId/status" element={<RepairStatusPage />} />
           {/* Route mặc định khi không khớp */}
           <Route path="*" element={<NotFound />} />
         </Routes>

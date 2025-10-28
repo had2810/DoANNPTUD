@@ -185,7 +185,7 @@ const ConfirmOrderDialog: React.FC<ConfirmOrderDialogProps> = ({
                 <div className="flex items-center gap-2">
                   <BadgeDollarSign className="w-4 h-4" />
                   <span className="font-semibold">Chi phí:</span> ₫
-                  {order?.estimatedCost?.toLocaleString("vi-VN")}
+                  {(order?.serviceId?.price || order?.estimatedCost || 0)?.toLocaleString("vi-VN")}
                 </div>
               </div>
               {/* Hiển thị thông tin nhân viên xác nhận */}

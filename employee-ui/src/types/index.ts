@@ -77,6 +77,22 @@ export interface Appointment {
   imageUrl?: string;
 }
 
+// Repair Status
+export interface RepairStatusLogItem {
+  status: "Checking" | "In Repair" | "Waiting for Customer" | "Completed" | "Cancelled";
+  time: string;
+}
+
+export interface RepairStatus {
+  _id: string;
+  appointmentId: Appointment;
+  status: "Checking" | "In Repair" | "Waiting for Customer" | "Completed" | "Cancelled";
+  statusLog: RepairStatusLogItem[];
+  estimatedCompletionTime?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Auth
 export interface LoginRequest {
   email: string;

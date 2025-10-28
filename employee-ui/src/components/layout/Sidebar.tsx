@@ -107,6 +107,12 @@ const Sidebar = ({ collapsed }: SidebarProps) => {
       icon: CalendarDays,
       path: "/weekly-schedule",
     },
+    {
+      id: "repair-status",
+      label: "Trạng thái sửa chữa",
+      icon: Settings,
+      path: "/repair-status",
+    },
     // { id: "analytics", label: "Thống kê", icon: BarChart3, path: "/analytics" },
     { id: "settings", label: "Cài đặt", icon: Settings, path: "/settings" },
     { id: "help", label: "Trợ giúp", icon: HelpCircle, path: "/help" },

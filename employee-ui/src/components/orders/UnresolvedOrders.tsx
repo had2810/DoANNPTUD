@@ -194,13 +194,15 @@ const OrderDetail = () => {
             Xác nhận đơn
           </Button>
         ) : appointment.status === "confirmed" ? (
-          <Button
-            variant="destructive"
-            onClick={() => handleUpdateStatus("pending")}
-          >
-            <XCircle className="h-4 w-4 mr-2" />
-            Hủy xác nhận
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="destructive"
+              onClick={() => handleUpdateStatus("pending")}
+            >
+              <XCircle className="h-4 w-4 mr-2" />
+              Hủy xác nhận
+            </Button>
+          </div>
         ) : null}
       </div>
 
@@ -345,7 +347,7 @@ const OrderDetail = () => {
                 </div>
                 <div className="pl-6">
                   <p className="font-medium text-green-600 text-xl">
-                    ₫{appointment.estimatedCost.toLocaleString("vi-VN")}
+                    ₫{(appointment.serviceId?.price || appointment.estimatedCost || 0).toLocaleString("vi-VN")}
                   </p>
                 </div>
               </div>
