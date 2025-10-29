@@ -21,7 +21,9 @@ import ScheduleCalendar from "@/components/calendar/ScheduleCalendar";
 import ScheduleBoard from "@/components/calendar/ScheduleBoard";
 import dayjs from "dayjs";
 import { useQuery } from "@tanstack/react-query";
-import { Appointment, AvailableTimeData } from "@/types";
+import { Appointment, Employee } from "@/types";
+import { AvailableTimeResponse } from "@/types/schedule";
+import { useAuth } from "@/hooks/useAuth";
 import {
   User,
   Hash,
@@ -30,17 +32,6 @@ import {
   Info,
   BadgeDollarSign,
 } from "lucide-react";
-
-interface Employee {
-  _id: string;
-  fullName: string;
-  email: string;
-  phoneNumber?: string;
-  phone?: string;
-  address?: string;
-  avatar_url?: string;
-  role: number;
-}
 
 interface ConfirmOrderDialogProps {
   open: boolean;
@@ -64,12 +55,15 @@ const ConfirmOrderDialog: React.FC<ConfirmOrderDialogProps> = ({
   const [employeeWorkScheduleId, setEmployeeWorkScheduleId] =
     useState<string>("");
 
-  // Lấy danh sách nhân viên
+  // Lấy thông tin nhân viên đang đăng nhập
+  const { data: me } = useAuth();
+  
   useEffect(() => {
-    if (open) {
-      employeeService.getEmployees().then(setEmployees);
+    if (open && me?.data) {
+      setSelectedEmployee(me.data._id);
+      setEmployees([me.data]);
     }
-  }, [open]);
+  }, [open, me]);
 
   useEffect(() => {
     if (open && order?.appointmentTime) {
@@ -113,14 +107,12 @@ const ConfirmOrderDialog: React.FC<ConfirmOrderDialogProps> = ({
     }
   }, [selectedEmployee]);
 
-  console.log(">> employeeWorkScheduleId", employeeWorkScheduleId);
-  // Lấy lịch ngày
-  const { data: availableTimes } = useQuery<AvailableTimeData>({
-    queryKey: ["availableTimes", employeeWorkScheduleId, formattedDate],
-    queryFn: () =>
-      scheduleService.getAnAvailableTime(employeeWorkScheduleId, formattedDate),
-    enabled: !!employeeWorkScheduleId && !!formattedDate,
-  });
+ const { data: availableTimes } = useQuery<AvailableTimeResponse, Error>({
+  queryKey: ["availableTimes", employeeWorkScheduleId, formattedDate],
+  queryFn: async () =>
+    (await scheduleService.getAnAvailableTime(employeeWorkScheduleId, formattedDate)) as unknown as AvailableTimeResponse,
+  enabled: !!employeeWorkScheduleId && !!formattedDate,
+});
 
   console.log("availableTimes", availableTimes);
 
@@ -193,36 +185,22 @@ const ConfirmOrderDialog: React.FC<ConfirmOrderDialogProps> = ({
                 <div className="flex items-center gap-2">
                   <BadgeDollarSign className="w-4 h-4" />
                   <span className="font-semibold">Chi phí:</span> ₫
-                  {order?.estimatedCost?.toLocaleString("vi-VN")}
+                  {(order?.serviceId?.price || order?.estimatedCost || 0)?.toLocaleString("vi-VN")}
                 </div>
               </div>
-              {/* Dropdown chọn nhân viên */}
+              {/* Hiển thị thông tin nhân viên xác nhận */}
               <div className="mt-6 w-full">
                 <label className="block font-semibold mb-1">
-                  Chọn nhân viên xác nhận
+                  Nhân viên xác nhận
                 </label>
-                <Select
-                  value={selectedEmployee}
-                  onValueChange={setSelectedEmployee}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Chọn nhân viên" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {employees
-                      .filter((emp) => emp.role && emp.role._id === 2)
-                      .map((emp) => (
-                        <SelectItem
-                          key={emp._id}
-                          value={emp._id}
-                          className="flex items-center gap-2"
-                        >
-                          <User className="w-4 h-4 mr-2 inline-block" />
-                          {emp.fullName}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+                <div className="w-full p-2 bg-gray-50 border rounded-md flex items-center">
+                  <User className="w-4 h-4 mr-2 text-gray-500" />
+                  {selectedEmp ? (
+                    <span className="text-gray-700">{selectedEmp.fullName}</span>
+                  ) : (
+                    <span className="text-gray-500">Đang tải...</span>
+                  )}
+                </div>
               </div>
               {/* Thông tin nhân viên đã chọn */}
               {selectedEmp && (

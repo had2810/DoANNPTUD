@@ -40,7 +40,9 @@ const appointmentSchema = new mongoose.Schema(
       unique: true,
       required: true,
     },
-    isDeleted: { type: Boolean, default: false },
+  isDeleted: { type: Boolean, default: false },
+  // Payment fields
+
   },
   { timestamps: true }
 );

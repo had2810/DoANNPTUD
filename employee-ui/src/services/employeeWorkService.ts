@@ -49,6 +49,24 @@ const getEmployeeWorkById = async (id) => {
   return response.data;
 };
 
+// Weekly Schedule APIs
+const createWeeklySchedule = async (weeklyScheduleData) => {
+  const response = await axios.post(`${API_URL}/employee-work/weekly`, weeklyScheduleData, {
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+const getWeeklySchedule = async (weekStartDate) => {
+  console.log("getWeeklySchedule service - weekStartDate:", weekStartDate);
+  const response = await axios.get(`${API_URL}/employee-work/weekly`, {
+    params: { weekStartDate },
+    withCredentials: true,
+  });
+  console.log("getWeeklySchedule service - response:", response.data);
+  return response.data;
+};
+
 export default {
   createEmployeeWork,
   getMyEmployeeWorks,
@@ -56,4 +74,6 @@ export default {
   updateEmployeeWork,
   deleteEmployeeWork,
   getEmployeeWorkById,
+  createWeeklySchedule,
+  getWeeklySchedule,
 };

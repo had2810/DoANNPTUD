@@ -13,6 +13,7 @@ const TITLES: Record<string, string> = {
   emails: "Emails",
   analytics: "Analytics",
   "personal-calendar": "Lịch làm việc",
+  "repair-status": "Trạng thái sửa chữa",
   settings: "Settings",
   help: "Help & Support",
 };

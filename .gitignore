@@ -18,7 +18,7 @@
 *.pdb
 
 # Compiled Dynamic libraries
-*.so
+*.so1
 *.dylib
 *.dll
 
@@ -40,4 +40,13 @@
 # debug information files
 *.dwo
 # Environment variables
+**/.env
+# Ignore all node_modules in project
+node_modules/
+*/node_modules/
+FrontEnd/node_modules/
+employee-ui/node_modules/
 .env
+BackEnd/.env
+FrontEnd/.env
+employee-ui/.env

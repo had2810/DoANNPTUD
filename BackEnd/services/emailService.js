@@ -3,10 +3,19 @@ const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
 dotenv.config();
 
+// Configure transporter using env vars.
+// For Gmail: host smtp.gmail.com, port 465 (secure=true) or 587 (secure=false).
+// NOTE: Google blocks plain password login for regular accounts. Use an
+// App Password (recommended) or OAuth2. See README notes below.
+const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 465;
+const secure = typeof process.env.SMTP_SECURE !== "undefined"
+  ? process.env.SMTP_SECURE === "true"
+  : port === 465;
+
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: false, // với port 587
+  host: process.env.SMTP_HOST || "smtp.gmail.com",
+  port,
+  secure,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -58,7 +67,7 @@ const templates = {
         </div>
 
         <div style="margin:32px 0;text-align:center">
-          <a href="https://github.com/MT-KS-04" style="${commonStyles.button}">
+          <a href="https://github.com/had2810" style="${commonStyles.button}">
             Khám phá ngay
           </a>
         </div>
@@ -69,6 +78,36 @@ const templates = {
             <a href="#" style="color:#8f5cf7;text-decoration:none;margin-right:12px">Chính sách bảo mật</a>
             <a href="#" style="color:#8f5cf7;text-decoration:none">Liên hệ hỗ trợ</a>
           </div>
+        </div>
+      </div>
+    `,
+  }),
+
+  // Forgot password template
+  forgotPassword: (name, url) => ({
+    subject: "🔐 Đặt lại mật khẩu TechMate",
+    html: `
+      <div style="${commonStyles.container}">
+        <div style="${commonStyles.logo}">
+          <div style="${commonStyles.logoWrapper}">
+            <span style="${commonStyles.logoText}">Tech<span style="color:#4fc3f7">Mate</span></span>
+          </div>
+        </div>
+
+        <h2 style="${commonStyles.heading}">Đặt lại mật khẩu</h2>
+
+        <p style="${commonStyles.text}">Xin chào ${name || "Người dùng"},</p>
+
+        <p style="${commonStyles.text}">Bạn (hoặc ai đó) đã yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Vui lòng nhấn nút bên dưới để thiết lập mật khẩu mới. Liên kết chỉ có hiệu lực trong thời gian giới hạn.</p>
+
+        <div style="text-align:center;margin:24px 0">
+          <a href="${url}" style="${commonStyles.button}">Đặt lại mật khẩu</a>
+        </div>
+
+        <p style="${commonStyles.text}">Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
+
+        <div style="${commonStyles.footer}">
+          <div>© 2025 TechMate. Nếu cần hỗ trợ, vui lòng liên hệ hỗ trợ.</div>
         </div>
       </div>
     `,
@@ -488,7 +527,8 @@ const templates = {
 async function sendMail(to, templateName, ...args) {
   const { subject, html } = templates[templateName](...args);
   const mailOptions = {
-    from: process.env.SMTP_USER,
+    // Allow overriding the From header. If SMTP_FROM not set, use SMTP_USER.
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
     to,
     subject,
     html,

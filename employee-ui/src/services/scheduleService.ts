@@ -3,10 +3,8 @@ import axios from "axios";
 const API_URL = import.meta.env.VITE_API_URL;
 
 interface AvailableTimeResponse {
-  data: {
-    timeSlots: string[];
-    appointmentToday?: Appointment[];
-  };
+  timeSlots: string[];
+  appointmentToday: Appointment[];
 }
 
 interface MonthScheduleResponse {

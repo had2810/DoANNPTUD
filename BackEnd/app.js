@@ -46,6 +46,7 @@ const userRoute = require("./routes/humanResources/userRouter");
 const employeeRoute = require("./routes/humanResources/employeeRouter");
 const permissionRoute = require("./routes/humanResources/permissionRouter");
 const authRoute = require("./routes/authRouter");
+const payRouter = require("./routes/payRouter");
 const deviceTemplateRoute = require("./routes/deviceService/deviceTemplateRouter");
 const serviceRouter = require("./routes/deviceService/serviceRouter");
 const partRouter = require("./routes/deviceService/partRouter");
@@ -55,6 +56,7 @@ const appointmentsRouter = require("./routes/repairScheduling/appointmentsRouter
 const employeeWorkRoute = require("./routes/repairScheduling/employeeWorkRouter");
 const repairStatusRouter = require("./routes/repairScheduling/repairStatusRouter");
 const scheduleRoute = require("./routes/repairScheduling/scheduleRoute");
+const invoiceRouter = require("./routes/invoiceRouter");
 
 // Connect to MongoDB (use MONGO_URL from env if available)
 const mongoUrl =
@@ -86,6 +88,7 @@ app.use("/employee", employeeRoute);
 app.use("/permission", permissionRoute);
 app.use("/humanResources/auth", authRoute);
 app.use("/auth", authRoute);
+app.use("/pay", payRouter);
 /* API Repair Scheduling */
 app.use("/appointments", appointmentsRouter);
 app.use("/employee-work", employeeWorkRoute);
@@ -100,6 +103,7 @@ app.use("/parts-inventory", partsInventoryRouter);
 
 /* Personal Schedule API */
 app.use("/schedule", scheduleRoute);
+app.use("/invoice", invoiceRouter);
 
 // view engine setup (keep existing)
 app.set("views", path.join(__dirname, "views"));

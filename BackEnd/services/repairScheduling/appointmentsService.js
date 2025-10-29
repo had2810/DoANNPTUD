@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const baseService = require("../baseService");
 const Appointment = require("../../schemas/repairScheduling/appointments.model");
 const repairStatusService = require("./repairStatusService");
@@ -168,6 +169,20 @@ const appointmentsService = {
           estimatedCompletionTime,
         });
       }
+
+        // Tạo hóa đơn cho appointment nếu chưa có
+        const Invoice = require("../../schemas/invoicePayments/invoice.model");
+        const invoiceExisted = await Invoice.findOne({ appointmentId: update._id });
+        if (!invoiceExisted) {
+          const service = await Service.findById(update.serviceId);
+      await Invoice.create({
+  userId: new mongoose.Types.ObjectId(update.userId),
+  appointmentId: new mongoose.Types.ObjectId(update._id),
+  totalAmount: service?.price || 0,
+  status: "Pending",
+});
+
+        }
     }
     // ✅ Nếu đổi nhân viên: cập nhật lại employeeWork
     const oldEmployeeId = previousAppointment.employeeId?.toString();

@@ -11,6 +11,7 @@ import {
   Settings2,
   ShoppingBag,
   Calendar,
+  CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import LogoutConfirmDialog from "../dialog/LogoutConfirmDialog";
@@ -99,6 +100,18 @@ const Sidebar = ({ collapsed }: SidebarProps) => {
       label: "Lịch làm việc",
       icon: Calendar,
       path: "/personal-calendar",
+    },
+    {
+      id: "weekly-schedule",
+      label: "Đăng ký lịch tuần",
+      icon: CalendarDays,
+      path: "/weekly-schedule",
+    },
+    {
+      id: "repair-status",
+      label: "Trạng thái sửa chữa",
+      icon: Settings,
+      path: "/repair-status",
     },
     // { id: "analytics", label: "Thống kê", icon: BarChart3, path: "/analytics" },
     { id: "settings", label: "Cài đặt", icon: Settings, path: "/settings" },

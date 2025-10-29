@@ -11,9 +11,12 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 const ViewDialogEmployee = ({ open, onOpenChange, work }) => {
-  if (!work || !work.startTime) return null;
+  if (!work) return null;
 
-  const [selectedDate, setSelectedDate] = useState(new Date(work?.startTime));
+  // Use work.startTime when available, otherwise fall back to today
+  const [selectedDate, setSelectedDate] = useState(
+    work?.startTime ? new Date(work.startTime) : new Date()
+  );
 
   // const formattedDate = selectedDate.toLocaleDateString("en-CA");
   const formattedDate =

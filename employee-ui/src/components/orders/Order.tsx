@@ -69,7 +69,7 @@ const Orders = () => {
         orderCode: a.orderCode || "",
         customerName: a.userId?.fullName || "",
         serviceName: a.serviceId?.serviceName || "",
-        totalCost: a.estimatedCost || 0,
+        totalCost: a.serviceId?.price || a.estimatedCost || 0,
         appointmentDate: new Date(a.appointmentTime).toLocaleDateString(),
       }))
       // Sắp xếp mới nhất lên đầu

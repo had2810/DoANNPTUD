@@ -77,6 +77,22 @@ export interface Appointment {
   imageUrl?: string;
 }
 
+// Repair Status
+export interface RepairStatusLogItem {
+  status: "Checking" | "In Repair" | "Waiting for Customer" | "Completed" | "Cancelled";
+  time: string;
+}
+
+export interface RepairStatus {
+  _id: string;
+  appointmentId: Appointment;
+  status: "Checking" | "In Repair" | "Waiting for Customer" | "Completed" | "Cancelled";
+  statusLog: RepairStatusLogItem[];
+  estimatedCompletionTime?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Auth
 export interface LoginRequest {
   email: string;
@@ -107,6 +123,34 @@ export interface Shift {
   createdAt: string;
   updatedAt: string;
   __v: number;
+}
+
+// Weekly Schedule Types
+export interface WorkDay {
+  dayOfWeek: number; // 1=CN, 2=T2, 3=T3, 4=T4, 5=T5, 6=T6, 7=T7
+  startHour: string;
+  endHour: string;
+}
+
+export interface WeeklySchedule {
+  _id: string;
+  employeeId: string;
+  weekStartDate: string; // Thứ 2 đầu tuần
+  weekEndDate: string;   // Chủ nhật cuối tuần
+  workDays: WorkDay[];
+  excludedDates: string[];
+  appointmentId: Appointment[];
+  status: "Đang trực" | "Bận" | "Nghỉ";
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateWeeklyScheduleRequest {
+  employeeId: string;
+  weekStartDate: string; // Format: YYYY-MM-DD
+  workDays: WorkDay[];
+  status?: "Đang trực" | "Bận" | "Nghỉ";
 }
 export interface AvailableTimeData {
   timeSlots: string[];
