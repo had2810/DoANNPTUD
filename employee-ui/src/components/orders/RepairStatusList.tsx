@@ -17,7 +17,7 @@ const statusBadge = (status: RepairStatus["status"]) => {
   const map: Record<string, { label: string; cls: string }> = {
     Checking: { label: "Đang kiểm tra", cls: "bg-purple-100 text-purple-800" },
     "In Repair": { label: "Đang sửa chữa", cls: "bg-blue-100 text-blue-800" },
-    "Waiting for Customer": { label: "Chờ phản hồi khách", cls: "bg-yellow-100 text-yellow-800" },
+    "Waiting for Customer": { label: "Chờ phản hồi & thanh toán", cls: "bg-yellow-100 text-yellow-800" },
     Completed: { label: "Hoàn thành", cls: "bg-green-100 text-green-800" },
     Cancelled: { label: "Đã hủy", cls: "bg-red-100 text-red-800" },
   };

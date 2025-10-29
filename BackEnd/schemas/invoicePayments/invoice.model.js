@@ -13,7 +13,8 @@ const invoiceSchema = new mongoose.Schema(
       required: true,
     },
     totalAmount: { type: Number, required: true },
-    status: { type: String, enum: ["Paid", "Pending"], default: "Pending" },
+  status: { type: String, enum: ["Paid", "Pending"], default: "Pending" },
+  paidAt: { type: Date },
     isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
